@@ -2,9 +2,9 @@
 
 namespace MahShamim\CityBank;
 
+use MahShamim\CityBank\Commands\CityBankCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use MahShamim\CityBank\Commands\CityBankCommand;
 
 class CityBankServiceProvider extends PackageServiceProvider
 {
