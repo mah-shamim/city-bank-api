@@ -4,7 +4,7 @@ namespace MahShamim\CityBank\Commands;
 
 use Illuminate\Console\Command;
 
-class CityBankInstallCommand extends Command
+class InstallCommand extends Command
 {
     public $signature = 'city-bank:install';
 
