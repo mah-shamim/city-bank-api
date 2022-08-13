@@ -30,11 +30,13 @@ class InstallCommand extends Command
         if ($this->confirm('Do you wish to added Environment Variables?')) {
             try {
                 $this->addEnvironmentVariable();
+
                 return self::SUCCESS;
             } catch (\Exception) {
                 return self::FAILURE;
             }
         }
+
         return self::SUCCESS;
     }
 
