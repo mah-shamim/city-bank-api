@@ -35,6 +35,7 @@ class InstallCommand extends Command
                 return self::FAILURE;
             }
         }
+
         return self::SUCCESS;
     }
 
