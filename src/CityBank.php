@@ -456,21 +456,6 @@ class CityBank
      * @return object
      * @throws \Exception
      */
-    public function topUp($input)
-    {
-        if($input->service_id == 15):
-            $returnValue = $this->doBkashTransfer($input->transaction_json_data);
-        else:
-            $returnValue = $this->doTransfer($input->transaction_json_data);
-        endif;
-        return (object) $returnValue;
-    }
-
-    /**
-     * @param $input
-     * @return object
-     * @throws \Exception
-     */
     public function queryTnxStatus($input)
     {
         if($input['service_id'] == 15):
