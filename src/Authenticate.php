@@ -1,8 +1,6 @@
 <?php
 
-
 namespace MahShamim\CityBank;
-
 
 class Authenticate
 {
@@ -10,9 +8,11 @@ class Authenticate
      * Do authenticate service will provide you the access token by providing following parameter value
      *
      * @return mixed
+     *
      * @throws \Exception
      */
-    public function doAuthenticate(){
+    public function doAuthenticate()
+    {
         $return = 'AUTH_FAILED';
         $xml_string = '
             <auth_info xsi:type="urn:auth_info">
@@ -23,10 +23,11 @@ class Authenticate
         ';
         $soapMethod = 'doAuthenticate';
         $response = (new Request)->connection($xml_string, $soapMethod);
-        $returnValue = json_decode($response->doAuthenticateResponse->Response,true);
-        if($returnValue['message']=='Successful'):
+        $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
+        if ($returnValue['message'] == 'Successful') {
             $return = $returnValue['token'];
-        endif;
+        }
+
         return $return;
     }
 }
