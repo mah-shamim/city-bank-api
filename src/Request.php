@@ -1,19 +1,17 @@
 <?php
 
-
 namespace MahShamim\CityBank;
-
 
 use Illuminate\Support\Facades\Log;
 
 class Request
 {
-    public function __construct(){
+    public function __construct()
+    {
         $this->config = config('city-bank');
         if ($this->config['mode'] === 'sandbox') {
             $this->apiUrl = 'https://'.$this->config[$this->status]['app_host'].'/nrb_api_test/dynamicApi.php?wsdl';
             $this->status = 'sandbox';
-
         } else {
             $this->apiUrl = 'https://'.$this->config[$this->status]['app_host'].'/dynamicApi.php?wsdl';
             $this->status = 'live';
@@ -24,6 +22,7 @@ class Request
      * @param $xml_post_string
      * @param $method
      * @return \SimpleXMLElement
+     *
      * @throws \Exception
      */
     public function connection($xml_post_string, $method)
@@ -31,10 +30,10 @@ class Request
         $xml_string = $this->xmlGenerate($xml_post_string, $method);
         Log::info($method.'<br>'.$xml_string);
         $headers = [
-            "Host: " . $this->config[$this->status]['app_host'],
-            "Content-type: text/xml;charset=\"utf-8\"",
-            "Content-length: " . strlen($xml_string),
-            "SOAPAction: " .$method,
+            'Host: '.$this->config[$this->status]['app_host'],
+            'Content-type: text/xml;charset="utf-8"',
+            'Content-length: '.strlen($xml_string),
+            'SOAPAction: '.$method,
         ];
 
         // PHP cURL  for connection
@@ -54,11 +53,12 @@ class Request
             throw new \Exception(curl_error($ch), curl_errno($ch));
         }
         curl_close($ch);
-        $response1 = str_replace("<SOAP-ENV:Body>", "", $response);
-        $response2 = str_replace("</SOAP-ENV:Body>", "", $response1);
+        $response1 = str_replace('<SOAP-ENV:Body>', '', $response);
+        $response2 = str_replace('</SOAP-ENV:Body>', '', $response1);
         $response = str_replace('xmlns:ns1="urn:dynamicapi"', '', $response2);
-        $response = str_replace('ns1:', '', $response);//dd($response);
+        $response = str_replace('ns1:', '', $response); //dd($response);
         Log::info($method.'<br>'.$response);
+
         return simplexml_load_string($response);
     }
 
@@ -79,6 +79,7 @@ class Request
                 </soapenv:Body>
             </soapenv:Envelope>
         ';
+
         return $xml_string;
     }
 }
