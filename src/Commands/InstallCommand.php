@@ -32,6 +32,7 @@ class InstallCommand extends Command
                 return $this->addEnvironmentVariable();
             } catch (\Exception $exception) {
                 $this->error($exception->getMessage());
+
                 return self::FAILURE;
             }
         }
@@ -51,15 +52,18 @@ class InstallCommand extends Command
             CITY_BANK_EXCHANGE_COMPANY=null\n
             CITY_BANK_API_HOST=null\n\n
             ";
-            if (file_put_contents($envPath, ($envContent . $apiEnvVariableContent))) {
-                $this->info("Environment Variables Added Successfully.");
+            if (file_put_contents($envPath, ($envContent.$apiEnvVariableContent))) {
+                $this->info('Environment Variables Added Successfully.');
+
                 return self::SUCCESS;
             } else {
-                $this->error("Environment Variables Update Failed.");
+                $this->error('Environment Variables Update Failed.');
+
                 return self::FAILURE;
             }
         } else {
             $this->error("can't find the (.env) file");
+
             return self::FAILURE;
         }
     }
