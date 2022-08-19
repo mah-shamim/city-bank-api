@@ -40,16 +40,15 @@ class CityBank
     }
 
     /**
-     * @param array|mixed $config
+     * @param  array|mixed  $config
      */
     public function setConfig($config)
     {
         if (is_array($config)) {
             $this->config = $config;
         } else {
-            throw new \InvalidArgumentException("Invalid configuration value passed to config setter");
+            throw new \InvalidArgumentException('Invalid configuration value passed to config setter');
         }
-
     }
 
     /**
@@ -61,7 +60,7 @@ class CityBank
     }
 
     /**
-     * @param string $status
+     * @param  string  $status
      */
     public function setStatus(string $status)
     {
@@ -85,28 +84,24 @@ class CityBank
      */
     protected function generateApiUrl()
     {
-
         $url = ($this->config[$this->status]['secure'])
             ? 'https://'
             : 'http://';
 
-        $url .= ($this->config[$this->status]['host'] . $this->config[$this->status]['url']);
+        $url .= ($this->config[$this->status]['host'].$this->config[$this->status]['url']);
 
         return $url;
-
     }
 
     /**
-     * @param string|null $apiUrl send full url default config
+     * @param  string|null  $apiUrl send full url default config
      */
     public function setApiUrl(string $apiUrl = null)
     {
         $this->apiUrl = (is_null($apiUrl))
             ? $this->generateApiUrl()
             : $apiUrl;
-
     }
-
 
     /**
      * Do authenticate service will provide you the access token by providing following parameter value
@@ -148,7 +143,7 @@ class CityBank
         $headers = [
             "Host: {$this->config[$this->status]['host']}",
             'Content-type: text/xml;charset="utf-8"',
-            'Content-length: ' . strlen($payload),
+            'Content-length: '.strlen($payload),
             "SOAPAction: {$method}",
         ];
 
@@ -162,13 +157,14 @@ class CityBank
         curl_setopt($request, CURLOPT_POSTFIELDS, $payload); // the SOAP request
         curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
         $response = curl_exec($request);
-        Log::error($method . ' CURL reported error: ');
+        Log::error($method.' CURL reported error: ');
         if ($response === false) {
             throw new \Exception(curl_error($request), curl_errno($request));
         }
         curl_close($request);
         $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
-        Log::info($method . '<br>' . $formattedResponse);
+        Log::info($method.'<br>'.$formattedResponse);
+
         return simplexml_load_string($formattedResponse);
     }
 
