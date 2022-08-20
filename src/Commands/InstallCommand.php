@@ -67,28 +67,30 @@ class InstallCommand extends Command
         $envPath = base_path('.env');
 
         if (file_exists($envPath)) {
-
             $envContent = file_get_contents($envPath);
 
             $apiEnvVariableContent = $this->envVariables();
 
-            if (file_put_contents($envPath, $envContent . $apiEnvVariableContent, FILE_APPEND) !== false) {
-                $this->error("Environment variables added successfully.");
+            if (file_put_contents($envPath, $envContent.$apiEnvVariableContent, FILE_APPEND) !== false) {
+                $this->error('Environment variables added successfully.');
+
                 return self::SUCCESS;
             }
 
-            $this->error("Environment variables update failed.");
+            $this->error('Environment variables update failed.');
+
             return self::FAILURE;
         }
 
         $this->error("Can't find the (.env) file");
+
         return self::FAILURE;
     }
 
     /**
      * Return the env values
      *
-     * @param bool $overwrite
+     * @param  bool  $overwrite
      * @return string
      */
     protected function envVariables($overwrite = false)
