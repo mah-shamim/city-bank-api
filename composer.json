@@ -35,11 +35,6 @@
             "MahShamim\\CityBank\\": "src"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "MahShamim\\CityBank\\Tests\\": "tests"
-        }
-    },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",
         "format": "vendor/bin/pint"
