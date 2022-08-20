@@ -2,7 +2,7 @@
 
 namespace MahShamim\CityBank;
 
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\App;
 
 class CityBank
 {
@@ -22,6 +22,14 @@ class CityBank
      */
     public $apiUrl = '';
 
+    /**
+     * @var array
+     */
+    public $headers = [];
+
+    /**
+     * CityBank constructor.
+     */
     public function __construct()
     {
         $this->setConfig(config('city-bank'));
@@ -29,6 +37,8 @@ class CityBank
         $this->setStatus(config('city-bank.mode'));
 
         $this->setApiUrl();
+
+        $this->setHeaders('Content-type: text/xml;charset="utf-8"');
     }
 
     /**
@@ -89,6 +99,23 @@ class CityBank
             : $apiUrl;
     }
 
+
+    /**
+     * @return array
+     */
+    public function getHeaders()
+    {
+        return $this->headers;
+    }
+
+    /**
+     * @param string|array $headers
+     */
+    public function setHeaders(...$headers)
+    {
+        $this->headers = array_merge($this->headers, $headers);
+    }
+
     public function config($status = null)
     {
         if (is_null($status)) {
@@ -135,55 +162,69 @@ class CityBank
      */
     public function connection($xml_post_string, $method)
     {
-        $payload = $this->xmlWrapper($xml_post_string, $method);
+        $payload = $this->wrapper($xml_post_string, $method);
+        $contentLength = strlen($payload);
 
-        $headers = [
-            "Host: {$this->config[$this->status]['host']}",
-            'Content-type: text/xml;charset="utf-8"',
-            'Content-length: ' . strlen($payload),
+        $this->setHeaders("Content-length: {$contentLength}",
             "SOAPAction: {$method}",
-        ];
+            "Host: {$this->config[$this->status]['host']}"
+        );
 
         $request = curl_init();
-        curl_setopt($request, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($request, CURLOPT_URL, $this->getApiUrl());
-        curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($request, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-        curl_setopt($request, CURLOPT_TIMEOUT, 0);
-        curl_setopt($request, CURLOPT_POST, true);
-        curl_setopt($request, CURLOPT_POSTFIELDS, $payload); // the SOAP request
-        curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
-        $response = curl_exec($request);
-        Log::error($method . ' CURL reported error: ');
-        if ($response === false) {
-            throw new \Exception(curl_error($request), curl_errno($request));
+
+        $formattedResponse = "";
+
+        try {
+            curl_setopt($request, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($request, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+            curl_setopt($request, CURLOPT_TIMEOUT, 0);
+            curl_setopt($request, CURLOPT_POST, true);
+            curl_setopt($request, CURLOPT_POSTFIELDS, $payload); // the SOAP request
+            curl_setopt($request, CURLOPT_HTTPHEADER, $this->getHeaders());
+            curl_setopt($request, CURLOPT_URL, $this->getApiUrl());
+            $response = curl_exec($request);
+            if ($response === false) {
+                if (App::environment('production') == true) {
+                    logger("{$method} CURL Request Error : " . curl_error($request));
+                } else {
+                    throw new \Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
+                }
+            }
+            $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
+            logger("{$method} <br/> {$formattedResponse}");
+        } catch (\Exception $exception) {
+            if (App::environment('production') == true) {
+                logger("{$method} CURL Request Error : " . curl_error($request));
+            } else {
+                throw new \Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
+            }
+        } finally {
+            curl_close($request);
         }
-        curl_close($request);
-        $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
-        Log::info($method . '<br>' . $formattedResponse);
 
         return simplexml_load_string($formattedResponse);
     }
 
     /**
+     * Wrapping the request object as proper xml object stream
+     *
      * @param $string
      * @param $method
      * @return string
      */
-    public function xmlWrapper($string, $method)
+    public function wrapper($string, $method)
     {
-        $payload = <<<XML
-            <?xml version="1.0" encoding="utf-8"?>
+        return trim('
+        <?xml version="1.0" encoding="utf-8"?>
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:{$method} soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        {$string}
-                    </urn:{$method}>
+                    <urn:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        ' . $string . '
+                    </urn:' . $method . '>
                 </soapenv:Body>
             </soapenv:Envelope>
-        XML;
-
-        return trim($payload);
+        ');
     }
 }
