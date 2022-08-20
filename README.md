@@ -1,4 +1,4 @@
-# City Bank Api
+# City Bank Remittance API
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/mah-shamim/city-bank-api.svg?style=flat-square)](https://packagist.org/packages/mah-shamim/city-bank-api)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/mah-shamim/city-bank-api/run-tests?label=tests)](https://github.com/mah-shamim/city-bank-api/actions?query=workflow%3Arun-tests+branch%3Amain)
@@ -15,45 +15,66 @@ You can install the package via composer:
 composer require mah-shamim/city-bank-api
 ```
 
-You can publish and run the migrations with:
+## Usage
 
-```bash
-php artisan vendor:publish --tag="city-bank-api-migrations"
-php artisan migrate
+###For Non-Laravel Projects
+```php
+$config = [
+        'mode' => \MahShamim\CityBank\CityBank::MODE_SANDBOX,
+        'username' => env('CITY_BANK_API_USERNAME'),
+        'password' => env('CITY_BANK_API_PASSWORD'),
+        'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
+        'host' => 'nrbms.thecitybank.com',
+        'base_url' => 'https://nrbms.thecitybank.com',
+        'api_url' => '/nrb_api_test/dynamicApi.php?wsdl',
+    ];
+    
+$status = 'sandbox';
+
+$cityBank = new \MahShamim\CityBank($config, $status);
+
+$response = $cityBank->authenticate();
 ```
 
-You can publish the config file with:
+###For Laravel & Lumen
 
+You can set up whole configuration using this command
 ```bash
-php artisan vendor:publish --tag="city-bank-api-config"
+php artisan city-bank:install
+```
+
+OR
+
+You can publish the config file with(Laravel & Lumen):
+```bash
+php artisan vendor:publish --tag="city-bank-config"
 ```
 
 This is the contents of the published config file:
 
 ```php
 return [
+    'mode' => env('CITY_BANK_API_MODE', \MahShamim\CityBank\CityBank::MODE_SANDBOX), //sandbox, live
+    \MahShamim\CityBank\CityBank::MODE_SANDBOX => [
+        'mode' => \MahShamim\CityBank\CityBank::MODE_SANDBOX,
+        'username' => env('CITY_BANK_API_USERNAME'),
+        'password' => env('CITY_BANK_API_PASSWORD'),
+        'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
+        'host' => 'nrbms.thecitybank.com',
+        'base_url' => 'https://nrbms.thecitybank.com',
+        'api_url' => '/nrb_api_test/dynamicApi.php?wsdl',
+    ],
+    \MahShamim\CityBank\CityBank::MODE_LIVE => [
+        'mode' => \MahShamim\CityBank\CityBank::MODE_LIVE,
+        'username' => env('CITY_BANK_API_USERNAME'),
+        'password' => env('CITY_BANK_API_PASSWORD'),
+        'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
+        'host' => 'nrbms.thecitybank.com',
+        'base_url' => 'https://nrbms.thecitybank.com',
+        'api_url' => '/dynamicApi.php?wsdl',
+    ],
 ];
 ```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="city-bank-api-views"
-```
-
-## Usage
-
-```php
-$cityBank = new MahShamim\CityBank();
-echo $cityBank->echoPhrase('Hello, MahShamim!');
-```
-
-## Testing
-
-```bash
-composer test
-```
-
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
@@ -69,6 +90,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 ## Credits
 
 - [MD ARIFUL HAQUE](https://github.com/mah-shamim)
+- [Mohammad Hafijul Islam](https://github.com/hafijul233)
 - [All Contributors](../../contributors)
 
 ## License
