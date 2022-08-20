@@ -152,7 +152,6 @@ class CityBank
     /**
      * @param $xml_post_string
      * @param $method
-     * @return \SimpleXMLElement
      *
      * @throws Exception
      */
