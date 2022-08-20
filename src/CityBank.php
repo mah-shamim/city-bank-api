@@ -2,11 +2,16 @@
 
 namespace MahShamim\CityBank;
 
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
+use Exception;
+use InvalidArgumentException;
 
 class CityBank
 {
+
+    const MODE_LIVE = 'live';
+
+    const MODE_SANDBOX = 'sandbox';
+
     /**
      * @var array|mixed
      */
@@ -22,13 +27,22 @@ class CityBank
      */
     public $apiUrl = '';
 
-    public function __construct()
+    /**
+     * @var array
+     */
+    public $headers = [];
+
+    /**
+     * CityBank constructor.
+     * @param array $config
+     * @param string $status
+     */
+    public function __construct($config = [], $status = 'sandbox')
     {
-        $this->setConfig(Config::get('city-bank'));
-
-        $this->setStatus(Config::get('city-bank.mode'));
-
+        $this->setConfig($config);
+        $this->setStatus($status);
         $this->setApiUrl();
+        $this->setHeaders('Content-type: text/xml;charset="utf-8"');
     }
 
     /**
@@ -40,14 +54,14 @@ class CityBank
     }
 
     /**
-     * @param  array|mixed  $config
+     * @param array|mixed $config
      */
     public function setConfig($config)
     {
         if (is_array($config)) {
             $this->config = $config;
         } else {
-            throw new \InvalidArgumentException('Invalid configuration value passed to config setter');
+            throw new InvalidArgumentException('Invalid configuration value passed to config setter');
         }
     }
 
@@ -60,14 +74,14 @@ class CityBank
     }
 
     /**
-     * @param  string  $status
+     * @param string $status
      */
-    public function setStatus(string $status)
+    public function setStatus($status)
     {
-        if (in_array($status, ['live', 'sandbox'])) {
+        if (in_array($status, [self::MODE_LIVE, self::MODE_SANDBOX])) {
             $this->status = $status;
         } else {
-            throw new \InvalidArgumentException("Invalid value {$status} passed to status setter");
+            throw new InvalidArgumentException("Invalid value $status passed to status setter");
         }
     }
 
@@ -80,48 +94,54 @@ class CityBank
     }
 
     /**
-     * @return string
+     * @param string|null $apiUrl send full url default config
      */
-    protected function generateApiUrl()
-    {
-        $url = ($this->config[$this->status]['secure'])
-            ? 'https://'
-            : 'http://';
-
-        $url .= ($this->config[$this->status]['host'].$this->config[$this->status]['url']);
-
-        return $url;
-    }
-
-    /**
-     * @param  string|null  $apiUrl send full url default config
-     */
-    public function setApiUrl(string $apiUrl = null)
+    public function setApiUrl($apiUrl = null)
     {
         $this->apiUrl = (is_null($apiUrl))
-            ? $this->generateApiUrl()
+            ? ($this->config['base_url'] . $this->config['api_url'])
             : $apiUrl;
     }
 
     /**
-     * Do authenticate service will provide you the access token by providing following parameter value
+     * @return array
+     */
+    public function getHeaders()
+    {
+        return $this->headers;
+    }
+
+    /**
+     * @param string|array $headers
+     */
+    public function setHeaders(...$headers)
+    {
+        $this->headers = array_merge($this->headers, $headers);
+    }
+
+    /**
+     * Authenticate service will provide you the
+     * access token by providing following parameter value
      *
      * @return mixed
-     *
-     * @throws \Exception
+     * @throws Exception
      */
     public function authenticate()
     {
         $return = 'AUTH_FAILED';
-        $authPayload = <<<XML
+
+        $authPayload = trim('
             <auth_info xsi:type="urn:auth_info">
-                <username xsi:type="xsd:string">{$this->config[$this->status]['username']}</username>
-                <password xsi:type="xsd:string">{$this->config[$this->status]['password']}</password>
-                <exchange_company xsi:type="xsd:string">{$this->config[$this->status]['company']}</exchange_company>
+                <username xsi:type="xsd:string">' . (isset($this->config['username']) ? $this->config['username'] : '') . '</username>
+                <password xsi:type="xsd:string">' . (isset($this->config['password']) ? $this->config['password'] : '') . '</password>
+                <exchange_company xsi:type="xsd:string">' . (isset($this->config['company']) ? $this->config['company'] : '') . '</exchange_company>
             </auth_info>
-            XML;
-        $response = $this->connection($authPayload, 'doAuthenticate');
+            ');
+
+        $response = $this->connect($authPayload, 'doAuthenticate');
+
         $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
+
         if ($returnValue['message'] == 'Successful') {
             $return = $returnValue['token'];
         }
@@ -132,61 +152,90 @@ class CityBank
     /**
      * @param $xml_post_string
      * @param $method
-     * @return \SimpleXMLElement
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function connection($xml_post_string, $method)
+    protected function connect($xml_post_string, $method)
     {
-        $payload = $this->xmlWrapper($xml_post_string, $method);
+        $payload = $this->wrapper($xml_post_string, $method);
 
-        $headers = [
-            "Host: {$this->config[$this->status]['host']}",
-            'Content-type: text/xml;charset="utf-8"',
-            'Content-length: '.strlen($payload),
+        $contentLength = strlen($payload);
+
+        $this->setHeaders("Content-length: {$contentLength}",
             "SOAPAction: {$method}",
-        ];
+            "Host: {$this->config['host']}"
+        );
+
+        $formattedResponse = "";
+
+        if (!function_exists('curl_version')) {
+            throw new Exception("Curl extension is not enabled.", 500);
+        }
 
         $request = curl_init();
-        curl_setopt($request, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($request, CURLOPT_URL, $this->getApiUrl());
-        curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($request, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-        curl_setopt($request, CURLOPT_TIMEOUT, 0);
-        curl_setopt($request, CURLOPT_POST, true);
-        curl_setopt($request, CURLOPT_POSTFIELDS, $payload); // the SOAP request
-        curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
-        $response = curl_exec($request);
-        Log::error($method.' CURL reported error: ');
-        if ($response === false) {
-            throw new \Exception(curl_error($request), curl_errno($request));
+
+        try {
+            curl_setopt($request, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($request, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+            curl_setopt($request, CURLOPT_TIMEOUT, 0);
+            curl_setopt($request, CURLOPT_POST, true);
+            curl_setopt($request, CURLOPT_POSTFIELDS, $payload); // the SOAP request
+            curl_setopt($request, CURLOPT_HTTPHEADER, $this->getHeaders());
+            curl_setopt($request, CURLOPT_URL, $this->getApiUrl());
+            $response = curl_exec($request);
+            if ($response === false) {
+                $this->handleException($request, $method);
+            }
+
+            $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
+
+            logger("{$method} <br/> {$formattedResponse}");
+
+        } catch (Exception $exception) {
+            $this->handleException($request, $method);
+        } finally {
+            curl_close($request);
         }
-        curl_close($request);
-        $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
-        Log::info($method.'<br>'.$formattedResponse);
 
         return simplexml_load_string($formattedResponse);
+
     }
 
     /**
-     * @param $string
+     * Wrapping the request object as proper xml object stream
+     *
+     * @param $content
      * @param $method
      * @return string
      */
-    public function xmlWrapper($string, $method)
+    private function wrapper($content, $method)
     {
-        $payload = <<<XML
-            <?xml version="1.0" encoding="utf-8"?>
+        return trim('
+        <?xml version="1.0" encoding="utf-8"?>
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:{$method} soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        {$string}
-                    </urn:{$method}>
+                    <urn:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        ' . $content . '
+                    </urn:' . $method . '>
                 </soapenv:Body>
             </soapenv:Envelope>
-        XML;
+        ');
+    }
 
-        return trim($payload);
+    /**
+     * @param $request
+     * @param $method
+     * @return void
+     * @throws Exception
+     */
+    private function handleException($request, $method)
+    {
+        if ($this->getConfig()['mode'] == self::MODE_LIVE) {
+            logger("{$method} CURL Request Error : " . curl_error($request));
+        } else {
+            throw new Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
+        }
     }
 }

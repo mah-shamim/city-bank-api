@@ -1,10 +1,15 @@
 {
     "name": "mah-shamim/city-bank-api",
-    "description": "This is my package city-bank-api",
+    "description": "This APIs is used to initiate payment request from Mobile client/others exchange house.",
     "keywords": [
         "mah-shamim",
+        "hafijul233",
+        "lumen",
+        "city-bank",
+        "payment",
+        "exchange",
         "laravel",
-        "city-bank-api"
+        "bank-api"
     ],
     "homepage": "https://github.com/mah-shamim/city-bank-api",
     "license": "MIT",
@@ -12,49 +17,45 @@
         {
             "name": "MD ARIFUL HAQUE",
             "email": "mah.shamim@gmail.com",
+            "homepage": "https://mah-shamim.github.io",
+            "role": "Maintainer"
+        },
+        {
+            "name": "Mohammad Hafijul Islam",
+            "email": "hafijul233@gmail.com",
+            "homepage": "https://haifjulislam.me",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": "^7.3|^8.1",
+        "php": "^5.6|^7.0|^8.0",
+        "ext-curl": "*",
         "ext-simplexml": "*",
         "ext-json": "*",
-        "ext-curl": "*",
-        "spatie/laravel-package-tools": "^1.9.2",
-        "illuminate/contracts": "^8.0||^9.0"
+        "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
-        "nunomaduro/collision": "^6.0",
         "nunomaduro/larastan": "^2.0.1",
-        "orchestra/testbench": "^7.0",
-        "pestphp/pest": "^1.21",
-        "pestphp/pest-plugin-laravel": "^1.1",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
-        "phpstan/phpstan-phpunit": "^1.0",
-        "phpunit/phpunit": "^9.5"
+        "phpstan/phpstan-phpunit": "^1.0"
     },
     "autoload": {
         "psr-4": {
             "MahShamim\\CityBank\\": "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "MahShamim\\CityBank\\Tests\\": "tests"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",
-        "test": "vendor/bin/pest",
-        "test-coverage": "vendor/bin/pest --coverage",
         "format": "vendor/bin/pint"
     },
     "config": {
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true,
             "phpstan/extension-installer": true
         }
     },
