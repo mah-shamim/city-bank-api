@@ -3,23 +3,15 @@
 namespace MahShamim\CityBank;
 
 use Exception;
-use InvalidArgumentException;
 use SimpleXMLElement;
 
 class CityBank
 {
 
     /**
-     * Constants
+     * @var Config
      */
-    const MODE_LIVE = 'live';
-
-    const MODE_SANDBOX = 'sandbox';
-
-    /**
-     * @var array|mixed
-     */
-    public $config = [];
+    public $config;
 
     /**
      * @var string
@@ -31,63 +23,18 @@ class CityBank
      */
     public $apiUrl = '';
 
-    /**
-     * @var array
-     */
-    public $headers = [];
 
     /**
      * CityBank constructor.
      *
-     * @param  array  $config
-     * @param  string  $status
+     * @param array $config
+     * @param string $status
      */
-    public function __construct($config = [], $status = 'sandbox')
+    public function __construct($config = [])
     {
-        $this->setConfig($config);
-        $this->setStatus($status);
-        $this->setApiUrl();
-        $this->setHeaders('Content-type: text/xml;charset="utf-8"');
-    }
+        $this->config = new Config($config['username'], $config['password'], $config['company'], $config['mode']);
 
-    /**
-     * @return array|mixed
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
-
-    /**
-     * @param  array|mixed  $config
-     */
-    public function setConfig($config)
-    {
-        if (is_array($config)) {
-            $this->config = $config;
-        } else {
-            throw new InvalidArgumentException('Invalid configuration value passed to config setter');
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function getStatus()
-    {
-        return $this->status;
-    }
-
-    /**
-     * @param  string  $status
-     */
-    public function setStatus($status)
-    {
-        if (in_array($status, [self::MODE_LIVE, self::MODE_SANDBOX])) {
-            $this->status = $status;
-        } else {
-            throw new InvalidArgumentException("Invalid value $status passed to status setter");
-        }
+        $this->config->setHeaders('Content-type: text/xml;charset="utf-8"');
     }
 
     /**
@@ -99,29 +46,13 @@ class CityBank
     }
 
     /**
-     * @param  string|null  $apiUrl send full url default config
+     * @param string|null $apiUrl send full url default config
      */
     public function setApiUrl($apiUrl = null)
     {
         $this->apiUrl = (is_null($apiUrl))
-            ? ($this->config['base_url'].$this->config['api_url'])
+            ? ($this->config['base_url'] . $this->config['api_url'])
             : $apiUrl;
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeaders()
-    {
-        return $this->headers;
-    }
-
-    /**
-     * @param  string|array  $headers
-     */
-    public function setHeaders(...$headers)
-    {
-        $this->headers = array_merge($this->headers, $headers);
     }
 
     /**
@@ -138,9 +69,9 @@ class CityBank
 
         $authPayload = trim('
             <auth_info xsi:type="urn:auth_info">
-                <username xsi:type="xsd:string">'.(isset($this->config['username']) ? $this->config['username'] : '').'</username>
-                <password xsi:type="xsd:string">'.(isset($this->config['password']) ? $this->config['password'] : '').'</password>
-                <exchange_company xsi:type="xsd:string">'.(isset($this->config['company']) ? $this->config['company'] : '').'</exchange_company>
+                <username xsi:type="xsd:string">' . (isset($this->config['username']) ? $this->config['username'] : '') . '</username>
+                <password xsi:type="xsd:string">' . (isset($this->config['password']) ? $this->config['password'] : '') . '</password>
+                <exchange_company xsi:type="xsd:string">' . (isset($this->config['company']) ? $this->config['company'] : '') . '</exchange_company>
             </auth_info>
             ');
 
@@ -167,14 +98,15 @@ class CityBank
 
         $contentLength = strlen($payload);
 
-        $this->setHeaders("Content-length: {$contentLength}",
+        $this->setHeaders(
+            "Content-length: {$contentLength}",
             "SOAPAction: {$method}",
             "Host: {$this->config['host']}"
         );
 
         $formattedResponse = '';
 
-        if (! function_exists('curl_version')) {
+        if (!function_exists('curl_version')) {
             throw new Exception('Curl extension is not enabled.', 500);
         }
 
@@ -220,9 +152,9 @@ class CityBank
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:'.$method.' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        '.$content.'
-                    </urn:'.$method.'>
+                    <urn:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        ' . $content . '
+                    </urn:' . $method . '>
                 </soapenv:Body>
             </soapenv:Envelope>
         ');
@@ -238,9 +170,9 @@ class CityBank
     private function handleException($request, $method)
     {
         if ($this->getConfig()['mode'] == self::MODE_LIVE) {
-            logger("{$method} CURL Request Error : ".curl_error($request));
+            logger("{$method} CURL Request Error : " . curl_error($request));
         } else {
-            throw new Exception("{$method} CURL Request Error : ".curl_error($request), curl_errno($request));
+            throw new Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
         }
     }
 
@@ -418,5 +350,166 @@ class CityBank
         endif;
         return $returnValue;
     }
+
+    /**
+     * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
+     *
+     * @param $inputData
+     * receiver_first_name like receiver name
+     * bank_account_number like receiver bkash number or wallet number
+     * @return mixed
+     * @throws \Exception
+     */
+    public function bkashCustomerValidation($inputData)
+    {
+        $doAuthenticate = $this->doAuthenticate();
+        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+            $xml_string = '
+                <bkash_customer_validation xsi:type="urn:bkash_customer_validation">
+                    <!--You may enter the following 3 items in any order-->
+                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
+                    <fullName xsi:type="xsd:string">' . $inputData['receiver_first_name'] . '</fullName>
+                    <mobileNumber xsi:type="xsd:string">' . $inputData['bank_account_number'] . '</mobileNumber>
+                </bkash_customer_validation>
+            ';
+            $soapMethod = 'bkashCustomerValidation';
+            $response = $this->connectionCheck($xml_string, $soapMethod);
+            if (isset($response) && $response != false && $response != null):
+                $returnValue = json_decode($response->bkashCustomerValidationResponse->Response, true);
+            else:
+                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
+            endif;
+        else:
+            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
+        endif;
+        return $returnValue;
+    }
+
+    /**
+     * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
+     *
+     * @param $inputData
+     * bank_account_number like receiver bkash number or wallet number
+     * @return mixed
+     * @throws \Exception
+     */
+    public function bkashValidation($inputData)
+    {
+        $doAuthenticate = $this->doAuthenticate();
+        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+            $xml_string = '
+                <bkash_customer_details xsi:type="urn:bkash_customer_validation">
+                    <!--You may enter the following 3 items in any order-->
+                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
+                    <mobileNumber xsi:type="xsd:string">' . $inputData['bank_account_number'] . '</mobileNumber>
+                </bkash_customer_details>
+            ';
+            $soapMethod = 'getBkashCustomerDetails';
+            $response = $this->connectionCheck($xml_string, $soapMethod);
+            if (isset($response) && $response != false && $response != null):
+                $returnValue = json_decode($response->getBkashCustomerDetailsResponse->Response, true);
+            else:
+                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
+            endif;
+        else:
+            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
+        endif;
+        return $returnValue;
+    }
+
+    /**
+     * Do bKash transfer service will help you to send a bkash transaction
+     *
+     * @param $input_data
+     * @return mixed
+     * @throws \Exception
+     */
+    public function doBkashTransfer($inputData)
+    {
+        $doAuthenticate = $this->doAuthenticate();
+        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+            $xml_string = '
+                <do_bkash_transfer xsi:type="urn:do_bkash_transfer">
+                    <!--You may enter the following 18 items in any order-->
+                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
+                    <amount_in_bdt xsi:type="xsd:string">' . $inputData->transfer_amount . '</amount_in_bdt>
+                    <reference_no xsi:type="xsd:string">' . $inputData->reference_no . '</reference_no>
+                    <remitter_name xsi:type="xsd:string">' . $inputData->sender_first_name . '</remitter_name>
+                    <remitter_dob xsi:type="xsd:string">' . $inputData->sender_date_of_birth . '</remitter_dob>
+                    <!--Optional:-->
+                    <remitter_iqama_no xsi:type="xsd:string"/>
+                    <remitter_id_passport_no xsi:type="xsd:string">' . $inputData->sender_id_number . '</remitter_id_passport_no>
+                    <!--Optional:-->
+                    <remitter_address xsi:type="xsd:string">' . $inputData->sender_address . '</remitter_address>
+                    <remitter_mobile_no xsi:type="xsd:string">' . $inputData->sender_mobile . '</remitter_mobile_no>
+                    <issuing_country xsi:type="xsd:string">' . $inputData->sender_id_issue_country . '</issuing_country>
+            ';
+            if (isset($inputData->wallet_account_actual_name) && $inputData->wallet_account_actual_name != ''):
+                $xml_string .= '
+                    <beneficiary_name xsi:type="xsd:string">' . (isset($inputData->wallet_account_actual_name) ? $inputData->wallet_account_actual_name : null) . '</beneficiary_name>
+            ';
+            else:
+                $xml_string .= '
+                    <beneficiary_name xsi:type="xsd:string">' . ((isset($inputData->receiver_first_name) ? $inputData->receiver_first_name : null) . (isset($inputData->receiver_middle_name) ? ' ' . $inputData->receiver_middle_name : null) . (isset($inputData->receiver_last_name) ? ' ' . $inputData->receiver_last_name : null)) . '</beneficiary_name>
+            ';
+            endif;
+            $xml_string .= '
+                    <beneficiary_city xsi:type="xsd:string">' . (isset($inputData->receiver_city) ? $inputData->receiver_city : 'Dhaka') . '</beneficiary_city>
+                    <!--Optional:-->
+                    <beneficiary_id_no xsi:type="xsd:string"></beneficiary_id_no>
+                    <!--Optional:-->
+                    <beneficiary_id_type xsi:type="xsd:string"></beneficiary_id_type>
+                    <purpose_of_payment xsi:type="xsd:string">' . $inputData->purpose_of_remittance . '</purpose_of_payment>
+                    <beneficiary_mobile_phone_no xsi:type="xsd:string">' . $inputData->bank_account_number . '</beneficiary_mobile_phone_no>
+                    <!--Optional:-->
+                    <beneficiary_address xsi:type="xsd:string">' . $inputData->receiver_address . '</beneficiary_address>
+                    <issue_date xsi:type="xsd:string">' . date('Y-m-d', strtotime($inputData->created_date)) . '</issue_date>
+                </do_bkash_transfer>
+            ';
+            $soapMethod = 'doBkashTransfer';
+            $response = $this->connectionCheck($xml_string, $soapMethod);
+            if (isset($response) && $response != false && $response != null):
+                $returnValue = json_decode($response->doBkashTransferResponse->Response, true);
+            else:
+                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
+            endif;
+        else:
+            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
+        endif;
+        return $returnValue;
+    }
+
+    /**
+     * This service call will provide you the bkash transaction status.
+     *
+     * @param $inputData
+     * reference_no like system transaction number
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getBkashTnxStatus($inputData)
+    {
+        $doAuthenticate = $this->doAuthenticate();
+        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+            $xml_string = '
+                <bkash_transfer_status xsi:type="urn:bkash_transfer_status">
+                    <!--You may enter the following 2 items in any order-->
+                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
+                    <reference_no xsi:type="xsd:string">' . $inputData['reference_no'] . '</reference_no>
+                </bkash_transfer_status>
+            ';
+            $soapMethod = 'getBkashTransferStatus';
+            $response = $this->connectionCheck($xml_string, $soapMethod);
+            if (isset($response) && $response != false && $response != null):
+                $returnValue = json_decode($response->getBkashTransferStatusResponse->Response, true);
+            else:
+                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
+            endif;
+        else:
+            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
+        endif;
+        return $returnValue;
+    }
+
 
 }

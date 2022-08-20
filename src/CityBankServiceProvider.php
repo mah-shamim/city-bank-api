@@ -39,11 +39,12 @@ class CityBankServiceProvider extends ServiceProvider
         $this->app->alias('city-bank', CityBank::class);
 
         $this->app->singleton('city-bank', function ($app) {
-            $mode = Config::get('city-bank.mode', CityBank::MODE_SANDBOX);
 
-            $config = Config::get('city-bank.'.$mode);
+            $mode = Config::get('city-bank.mode');
 
-            return new CityBank($config, $mode);
+            $config = Config::get("city-bank.{$mode}");
+
+            return new CityBank($config);
         });
     }
 }
