@@ -12,14 +12,18 @@ return [
         'mode' => 'sandbox',
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
-        'exchange_company' => env('CITY_BANK_EXCHANGE_COMPANY'),
-        'app_host' => env('CITY_BANK_API_HOST'),
+        'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
+        'host' => env('CITY_BANK_API_SANDBOX_HOST'),
+        'url' => '/nrb_api_test/dynamicApi.php?wsdl',
+        'secure' => true, //[true => https , false => http ]
     ],
     'live' => [
         'mode' => 'live',
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
-        'exchange_company' => env('CITY_BANK_EXCHANGE_COMPANY'),
-        'app_host' => env('CITY_BANK_API_HOST'),
+        'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
+        'host' => env('CITY_BANK_API_LIVE_HOST'),
+        'url' => '/dynamicApi.php?wsdl',
+        'secure' => true, //[true => https , false => http ]
     ],
 ];
