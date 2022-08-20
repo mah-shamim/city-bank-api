@@ -372,6 +372,7 @@ class CityBank
 
     /**
      * Do amendment or cancel service will help you to send the transaction cancel/amendment request
+     *
      * @example reference_no like system transaction number, amend_query like cancel/amendment
      *
      * @param array
