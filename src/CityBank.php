@@ -120,10 +120,10 @@ class CityBank
     }
 
     /**
-     * Do authenticate service will provide you the access token by providing following parameter value
+     * Authenticate service will provide you the
+     * access token by providing following parameter value
      *
      * @return mixed
-     *
      * @throws Exception
      */
     public function authenticate()
