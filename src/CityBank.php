@@ -2,7 +2,9 @@
 
 namespace MahShamim\CityBank;
 
+use Exception;
 use Illuminate\Support\Facades\App;
+use InvalidArgumentException;
 
 class CityBank
 {
@@ -29,15 +31,14 @@ class CityBank
 
     /**
      * CityBank constructor.
+     * @param array $config
+     * @param string $status
      */
-    public function __construct()
+    public function __construct($config = [], $status = 'sandbox')
     {
-        $this->setConfig(config('city-bank'));
-
-        $this->setStatus(config('city-bank.mode'));
-
+        $this->setConfig($config);
+        $this->setStatus($status);
         $this->setApiUrl();
-
         $this->setHeaders('Content-type: text/xml;charset="utf-8"');
     }
 
@@ -57,7 +58,7 @@ class CityBank
         if (is_array($config)) {
             $this->config = $config;
         } else {
-            throw new \InvalidArgumentException('Invalid configuration value passed to config setter');
+            throw new InvalidArgumentException('Invalid configuration value passed to config setter');
         }
     }
 
@@ -77,7 +78,7 @@ class CityBank
         if (in_array($status, ['live', 'sandbox'])) {
             $this->status = $status;
         } else {
-            throw new \InvalidArgumentException("Invalid value {$status} passed to status setter");
+            throw new InvalidArgumentException("Invalid value $status passed to status setter");
         }
     }
 
@@ -95,10 +96,9 @@ class CityBank
     public function setApiUrl($apiUrl = null)
     {
         $this->apiUrl = (is_null($apiUrl))
-            ? ($this->config[$this->status]['base_url'] . $this->config[$this->status]['api_url'])
+            ? ($this->config['base_url'] . $this->config['api_url'])
             : $apiUrl;
     }
-
 
     /**
      * @return array
@@ -116,36 +116,29 @@ class CityBank
         $this->headers = array_merge($this->headers, $headers);
     }
 
-    public function config($status = null)
-    {
-        if (is_null($status)) {
-            return $this->config[$this->getStatus()];
-        }
-
-        return $this->getConfig();
-    }
-
     /**
      * Do authenticate service will provide you the access token by providing following parameter value
      *
      * @return mixed
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function authenticate()
     {
         $return = 'AUTH_FAILED';
 
-        $authPayload = '
+        $authPayload = trim('
             <auth_info xsi:type="urn:auth_info">
-                <username xsi:type="xsd:string">' . (isset($this->config[$this->status]['username']) ? $this->config[$this->status]['username'] : '') . '</username>
-                <password xsi:type="xsd:string">' . (isset($this->config[$this->status]['password']) ? $this->config[$this->status]['password'] : '') . '</password>
-                <exchange_company xsi:type="xsd:string">' . (isset($this->config[$this->status]['company']) ? $this->config[$this->status]['company'] : '') . '</exchange_company>
+                <username xsi:type="xsd:string">' . (isset($this->config['username']) ? $this->config['username'] : '') . '</username>
+                <password xsi:type="xsd:string">' . (isset($this->config['password']) ? $this->config['password'] : '') . '</password>
+                <exchange_company xsi:type="xsd:string">' . (isset($this->config['company']) ? $this->config['company'] : '') . '</exchange_company>
             </auth_info>
-            ';
+            ');
 
-        $response = $this->connection($authPayload, 'doAuthenticate');
+        $response = $this->connect($authPayload, 'doAuthenticate');
+
         $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
+
         if ($returnValue['message'] == 'Successful') {
             $return = $returnValue['token'];
         }
@@ -158,21 +151,26 @@ class CityBank
      * @param $method
      * @return \SimpleXMLElement
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function connection($xml_post_string, $method)
+    protected function connect($xml_post_string, $method)
     {
         $payload = $this->wrapper($xml_post_string, $method);
+
         $contentLength = strlen($payload);
 
         $this->setHeaders("Content-length: {$contentLength}",
             "SOAPAction: {$method}",
-            "Host: {$this->config[$this->status]['host']}"
+            "Host: {$this->config['host']}"
         );
 
-        $request = curl_init();
-
         $formattedResponse = "";
+
+        if (!function_exists('curl_version')) {
+            throw new Exception("Curl extension is not enabled.", 500);
+        }
+
+        $request = curl_init();
 
         try {
             curl_setopt($request, CURLOPT_SSL_VERIFYPEER, 0);
@@ -185,35 +183,31 @@ class CityBank
             curl_setopt($request, CURLOPT_URL, $this->getApiUrl());
             $response = curl_exec($request);
             if ($response === false) {
-                if (App::environment('production') == true) {
-                    logger("{$method} CURL Request Error : " . curl_error($request));
-                } else {
-                    throw new \Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
-                }
+                $this->handleException($request, $method);
             }
+
             $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
+
             logger("{$method} <br/> {$formattedResponse}");
-        } catch (\Exception $exception) {
-            if (App::environment('production') == true) {
-                logger("{$method} CURL Request Error : " . curl_error($request));
-            } else {
-                throw new \Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
-            }
+
+        } catch (Exception $exception) {
+            $this->handleException($request, $method);
         } finally {
             curl_close($request);
         }
 
         return simplexml_load_string($formattedResponse);
+
     }
 
     /**
      * Wrapping the request object as proper xml object stream
      *
-     * @param $string
+     * @param $content
      * @param $method
      * @return string
      */
-    public function wrapper($string, $method)
+    private function wrapper($content, $method)
     {
         return trim('
         <?xml version="1.0" encoding="utf-8"?>
@@ -221,10 +215,25 @@ class CityBank
                 <soapenv:Header/>
                 <soapenv:Body>
                     <urn:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        ' . $string . '
+                        ' . $content . '
                     </urn:' . $method . '>
                 </soapenv:Body>
             </soapenv:Envelope>
         ');
+    }
+
+    /**
+     * @param $request
+     * @param $method
+     * @return void
+     * @throws Exception
+     */
+    private function handleException($request, $method)
+    {
+        if (App::environment('production') == true) {
+            logger("{$method} CURL Request Error : " . curl_error($request));
+        } else {
+            throw new Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
+        }
     }
 }

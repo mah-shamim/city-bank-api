@@ -11,6 +11,6 @@ class CityBank extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \MahShamim\CityBank\CityBank::class;
+        return 'city-bank';
     }
 }
