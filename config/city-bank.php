@@ -9,12 +9,14 @@
 return [
     'mode' => env('CITY_BANK_API_MODE', 'sandbox'), //sandbox, live
     'sandbox' => [
+        'mode' => 'sandbox',
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
         'exchange_company' => env('CITY_BANK_EXCHANGE_COMPANY'),
         'app_host' => env('CITY_BANK_API_HOST'),
     ],
     'live' => [
+        'mode' => 'live',
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
         'exchange_company' => env('CITY_BANK_EXCHANGE_COMPANY'),
