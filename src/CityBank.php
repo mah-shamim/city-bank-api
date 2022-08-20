@@ -38,8 +38,9 @@ class CityBank
 
     /**
      * CityBank constructor.
-     * @param array $config
-     * @param string $status
+     *
+     * @param  array  $config
+     * @param  string  $status
      */
     public function __construct($config = [], $status = 'sandbox')
     {
@@ -58,7 +59,7 @@ class CityBank
     }
 
     /**
-     * @param array|mixed $config
+     * @param  array|mixed  $config
      */
     public function setConfig($config)
     {
@@ -78,7 +79,7 @@ class CityBank
     }
 
     /**
-     * @param string $status
+     * @param  string  $status
      */
     public function setStatus($status)
     {
@@ -98,12 +99,12 @@ class CityBank
     }
 
     /**
-     * @param string|null $apiUrl send full url default config
+     * @param  string|null  $apiUrl send full url default config
      */
     public function setApiUrl($apiUrl = null)
     {
         $this->apiUrl = (is_null($apiUrl))
-            ? ($this->config['base_url'] . $this->config['api_url'])
+            ? ($this->config['base_url'].$this->config['api_url'])
             : $apiUrl;
     }
 
@@ -116,7 +117,7 @@ class CityBank
     }
 
     /**
-     * @param string|array $headers
+     * @param  string|array  $headers
      */
     public function setHeaders(...$headers)
     {
@@ -128,6 +129,7 @@ class CityBank
      * access token by providing following parameter value
      *
      * @return mixed
+     *
      * @throws Exception
      */
     public function authenticate()
@@ -136,9 +138,9 @@ class CityBank
 
         $authPayload = trim('
             <auth_info xsi:type="urn:auth_info">
-                <username xsi:type="xsd:string">' . (isset($this->config['username']) ? $this->config['username'] : '') . '</username>
-                <password xsi:type="xsd:string">' . (isset($this->config['password']) ? $this->config['password'] : '') . '</password>
-                <exchange_company xsi:type="xsd:string">' . (isset($this->config['company']) ? $this->config['company'] : '') . '</exchange_company>
+                <username xsi:type="xsd:string">'.(isset($this->config['username']) ? $this->config['username'] : '').'</username>
+                <password xsi:type="xsd:string">'.(isset($this->config['password']) ? $this->config['password'] : '').'</password>
+                <exchange_company xsi:type="xsd:string">'.(isset($this->config['company']) ? $this->config['company'] : '').'</exchange_company>
             </auth_info>
             ');
 
@@ -170,10 +172,10 @@ class CityBank
             "Host: {$this->config['host']}"
         );
 
-        $formattedResponse = "";
+        $formattedResponse = '';
 
-        if (!function_exists('curl_version')) {
-            throw new Exception("Curl extension is not enabled.", 500);
+        if (! function_exists('curl_version')) {
+            throw new Exception('Curl extension is not enabled.', 500);
         }
 
         $request = curl_init();
@@ -195,7 +197,6 @@ class CityBank
             $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
 
             logger("{$method} <br/> {$formattedResponse}");
-
         } catch (Exception $exception) {
             $this->handleException($request, $method);
         } finally {
@@ -203,7 +204,6 @@ class CityBank
         }
 
         return simplexml_load_string($formattedResponse);
-
     }
 
     /**
@@ -220,9 +220,9 @@ class CityBank
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        ' . $content . '
-                    </urn:' . $method . '>
+                    <urn:'.$method.' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        '.$content.'
+                    </urn:'.$method.'>
                 </soapenv:Body>
             </soapenv:Envelope>
         ');
@@ -232,14 +232,15 @@ class CityBank
      * @param $request
      * @param $method
      * @return void
+     *
      * @throws Exception
      */
     private function handleException($request, $method)
     {
         if ($this->getConfig()['mode'] == self::MODE_LIVE) {
-            logger("{$method} CURL Request Error : " . curl_error($request));
+            logger("{$method} CURL Request Error : ".curl_error($request));
         } else {
-            throw new Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
+            throw new Exception("{$method} CURL Request Error : ".curl_error($request), curl_errno($request));
         }
     }
 
