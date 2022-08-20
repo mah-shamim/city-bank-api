@@ -3,16 +3,19 @@
 namespace MahShamim\CityBank;
 
 use Exception;
-use Illuminate\Support\Facades\App;
 use InvalidArgumentException;
 
 class CityBank
 {
+
+    const MODE_LIVE = 'live';
+
+    const MODE_SANDBOX = 'sandbox';
+
     /**
      * @var array|mixed
      */
     public $config = [];
-
 
     /**
      * @var string
@@ -75,7 +78,7 @@ class CityBank
      */
     public function setStatus($status)
     {
-        if (in_array($status, ['live', 'sandbox'])) {
+        if (in_array($status, [self::MODE_LIVE, self::MODE_SANDBOX])) {
             $this->status = $status;
         } else {
             throw new InvalidArgumentException("Invalid value $status passed to status setter");
@@ -230,7 +233,7 @@ class CityBank
      */
     private function handleException($request, $method)
     {
-        if (App::environment('production') == true) {
+        if ($this->getConfig()['mode'] == self::MODE_LIVE) {
             logger("{$method} CURL Request Error : " . curl_error($request));
         } else {
             throw new Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));

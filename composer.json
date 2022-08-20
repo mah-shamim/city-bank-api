@@ -32,7 +32,10 @@
     "autoload": {
         "psr-4": {
             "MahShamim\\CityBank\\": "src"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",

@@ -1,13 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: MD ARIFUL HAQUE
- * Date: 7/10/2020
- * Time: 1:00 AM
- */
 
 return [
-    'mode' => env('CITY_BANK_API_MODE', 'sandbox'), //sandbox, live
+    'mode' => env('CITY_BANK_API_MODE', \MahShamim\CityBank\CityBank::MODE_SANDBOX), //sandbox, live
     'sandbox' => [
         'mode' => 'sandbox',
         'username' => env('CITY_BANK_API_USERNAME'),

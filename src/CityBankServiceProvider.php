@@ -22,9 +22,7 @@ class CityBankServiceProvider extends ServiceProvider
         ]);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                InstallCommand::class
-            ]);
+            $this->commands(InstallCommand::class);
         }
 
     }
@@ -37,14 +35,15 @@ class CityBankServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/city-bank.php', 'city-bank'
+            __DIR__ . '/../config/city-bank.php',
+            'city-bank'
         );
 
         $this->app->alias('city-bank', CityBank::class);
 
         $this->app->singleton('city-bank', function ($app) {
 
-            $mode = Config::get('city-bank.mode', 'sandbox');
+            $mode = Config::get('city-bank.mode', CityBank::MODE_SANDBOX);
 
             $config = Config::get('city-bank.' . $mode);
 
