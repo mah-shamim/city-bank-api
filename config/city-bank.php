@@ -13,17 +13,15 @@ return [
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
         'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
-        'host' => env('CITY_BANK_API_SANDBOX_HOST'),
-        'url' => '/nrb_api_test/dynamicApi.php?wsdl',
-        'secure' => true, //[true => https , false => http ]
+        'base_url' => 'https://nrbms.thecitybank.com',
+        'api_url' => '/nrb_api_test/dynamicApi.php?wsdl',
     ],
     'live' => [
         'mode' => 'live',
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
         'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
-        'host' => env('CITY_BANK_API_LIVE_HOST'),
-        'url' => '/dynamicApi.php?wsdl',
-        'secure' => true, //[true => https , false => http ]
+        'base_url' => 'https://nrbms.thecitybank.com',
+        'api_url' => '/dynamicApi.php?wsdl',
     ],
 ];
