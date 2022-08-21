@@ -8,6 +8,7 @@ use InvalidArgumentException;
 
 /**
  * Class Config
+ *
  * @property string $mode current mode [sandbox, live]
  * @property string $username credentials username
  * @property string $password credentials password
@@ -16,7 +17,7 @@ use InvalidArgumentException;
  * @property string $host current host base url
  * @property string $api_url api endpoint url starting with slash(/)
  *
- * @package MahShamim\CityBank
+ * @package MahShamim\CityBank\Config
  */
 class Config
 {
@@ -41,7 +42,46 @@ class Config
      *
      * @var array
      */
-    protected $values = [];
+    private $values = [];
+
+    /**
+     * Magic getter function for dynamic
+     * value stored in values array
+     *
+     * @param $key
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        return $this->values[$key];
+    }
+
+    /**
+     * Magic isset function for handle unassigned
+     * value stored in values array exception
+     * @param $key
+     * @return void
+     * @throws \Exception
+     */
+    public function __isset($key)
+    {
+        if (!array_key_exists($key, $this->values)) {
+            throw  new \Exception("Trying to access an undefined magic property $key");
+        }
+    }
+
+    /**
+     * Removed magic property from value array
+     *
+     * @param $key
+     */
+    public function __unset($key)
+    {
+        if (array_key_exists($key, $this->values)) {
+            unset($this->values[$key]);
+        }
+
+    }
 
     /**
      * Config constructor.
@@ -55,18 +95,8 @@ class Config
     }
 
     /**
-     * Magic getter function for dynamic value stored in values array
-     *
-     * @param $key
-     * @return mixed
-     */
-    public function __get($key)
-    {
-        return $this->values[$key];
-    }
-
-    /**
-     * Magic setter function for dynamic value stored in values array
+     * Magic setter function for dynamic
+     * value stored in values array
      *
      * @param $key
      * @param $value
@@ -78,6 +108,10 @@ class Config
 
             case 'base_url' :
                 $this->configBaseUrl($value);
+                break;
+
+            case 'api_url' :
+                $this->configApiUrl($value);
                 break;
 
             case 'mode' :
@@ -103,6 +137,33 @@ class Config
     }
 
     /**
+     * @param string $url
+     */
+    public function configBaseUrl($url)
+    {
+        $metaData = parse_url($url);
+
+        if (isset($metaData['host'])) {
+
+            $this->setHeaders("Host: {$metaData['host']}");
+
+            $this->values['host'] = $metaData['host'];
+
+            $this->values['base_url'] = $url;
+        } else {
+            throw new InvalidArgumentException("Invalid value ($url) is not have host value");
+        }
+    }
+
+    /**
+     * @param $url
+     */
+    public function configApiUrl($url)
+    {
+        $this->values['api_url'] = ($this->base_url . $url);
+    }
+
+    /**
      * @return array
      */
     public function getHeaders()
@@ -119,17 +180,12 @@ class Config
     }
 
     /**
-     * @param string $url
+     * Force overwrite  the api url
+     *
+     * @param string $api_url
      */
-    public function configBaseUrl($url)
+    public function setApiUrl($api_url)
     {
-        $metaData = parse_url($url);
-
-        if (isset($metaData['host'])) {
-            $this->values['host'] = $metaData['host'];
-            $this->values['base_url'] = $url;
-        } else {
-            throw new InvalidArgumentException("Invalid value ($url) is not have host value");
-        }
+        $this->api_url = $api_url;
     }
 }

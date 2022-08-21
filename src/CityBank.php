@@ -3,7 +3,6 @@
 namespace MahShamim\CityBank;
 
 use Exception;
-use SimpleXMLElement;
 
 class CityBank
 {
@@ -14,66 +13,53 @@ class CityBank
     public $config;
 
     /**
-     * @var string
+     * @var Request
      */
-    public $status = 'sandbox';
-
-    /**
-     * @var string
-     */
-    public $apiUrl = '';
-
+    public $request;
 
     /**
      * CityBank constructor.
      *
      * @param array $config
-     * @param string $status
      */
     public function __construct($config = [])
     {
-        $this->config = new Config($config['username'], $config['password'], $config['company'], $config['mode']);
+        $this->config = new Config($config);
+
+        $this->request = new Request();
+
     }
 
-    /**
-     * @return string
-     */
-    public function getApiUrl()
-    {
-        return $this->apiUrl;
-    }
 
     /**
-     * @param string|null $apiUrl send full url default config
-     */
-    public function setApiUrl($apiUrl = null)
-    {
-        $this->apiUrl = (is_null($apiUrl))
-            ? ($this->config['base_url'] . $this->config['api_url'])
-            : $apiUrl;
-    }
-
-    /**
-     * Authenticate service will provide you the
-     * access token by providing following parameter value
+     * Authenticate service will provide you the access token
      *
      * @return mixed
-     *
      * @throws Exception
      */
     public function authenticate()
     {
         $return = 'AUTH_FAILED';
 
+        $payload = [
+            'auth_info' => [
+                'username' => $this->config->username,
+                'password' => $this->config->password,
+                'exchange_company' => $this->config->company,
+            ]
+        ];
+
+        $this->request->connect($payload, 'doAuthenticate');
+
         $authPayload = trim('
             <auth_info xsi:type="urn:auth_info">
-                <username xsi:type="xsd:string">' . (isset($this->config['username']) ? $this->config['username'] : '') . '</username>
-                <password xsi:type="xsd:string">' . (isset($this->config['password']) ? $this->config['password'] : '') . '</password>
-                <exchange_company xsi:type="xsd:string">' . (isset($this->config['company']) ? $this->config['company'] : '') . '</exchange_company>
+                <username xsi:type="xsd:string">' . $this->config->username . '</username>
+                <password xsi:type="xsd:string">' . $this->config->password . '</password>
+                <exchange_company xsi:type="xsd:string">' . $this->config->company . '</exchange_company>
             </auth_info>
             ');
 
-        $response = $this->connect($authPayload, 'doAuthenticate');
+        $response = $this->request->connect($authPayload, );
 
         $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
 
@@ -84,79 +70,6 @@ class CityBank
         return $return;
     }
 
-    /**
-     * @param $xmlString
-     * @param $method
-     * @return false|SimpleXMLElement|string|null
-     * @throws Exception
-     */
-    protected function connect($xmlString, $method)
-    {
-        $payload = $this->wrapper($xmlString, $method);
-
-        $contentLength = strlen($payload);
-
-        $this->setHeaders(
-            "Content-length: {$contentLength}",
-            "SOAPAction: {$method}",
-            "Host: {$this->config['host']}"
-        );
-
-        $formattedResponse = '';
-
-        if (!function_exists('curl_version')) {
-            throw new Exception('Curl extension is not enabled.', 500);
-        }
-
-        $request = curl_init();
-
-        try {
-            curl_setopt($request, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($request, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-            curl_setopt($request, CURLOPT_TIMEOUT, 0);
-            curl_setopt($request, CURLOPT_POST, true);
-            curl_setopt($request, CURLOPT_POSTFIELDS, $payload); // the SOAP request
-            curl_setopt($request, CURLOPT_HTTPHEADER, $this->getHeaders());
-            curl_setopt($request, CURLOPT_URL, $this->getApiUrl());
-            $response = curl_exec($request);
-            if ($response === false) {
-                $this->handleException($request, $method);
-            }
-
-            $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
-
-            logger("{$method} <br/> {$formattedResponse}");
-        } catch (Exception $exception) {
-            $this->handleException($request, $method);
-        } finally {
-            curl_close($request);
-        }
-
-        return simplexml_load_string($formattedResponse);
-    }
-
-    /**
-     * Wrapping the request object as proper xml object stream
-     *
-     * @param $content
-     * @param $method
-     * @return string
-     */
-    private function wrapper($content, $method)
-    {
-        return trim('
-        <?xml version="1.0" encoding="utf-8"?>
-            <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
-                <soapenv:Header/>
-                <soapenv:Body>
-                    <urn:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        ' . $content . '
-                    </urn:' . $method . '>
-                </soapenv:Body>
-            </soapenv:Envelope>
-        ');
-    }
 
     /**
      * @param $request
