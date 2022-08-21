@@ -33,8 +33,6 @@ class CityBank
     public function __construct($config = [])
     {
         $this->config = new Config($config['username'], $config['password'], $config['company'], $config['mode']);
-
-        $this->config->setHeaders('Content-type: text/xml;charset="utf-8"');
     }
 
     /**

@@ -6,6 +6,18 @@ namespace MahShamim\CityBank;
 
 use InvalidArgumentException;
 
+/**
+ * Class Config
+ * @property string $mode current mode [sandbox, live]
+ * @property string $username credentials username
+ * @property string $password credentials password
+ * @property string $company exchange company
+ * @property string $base_url current base url
+ * @property string $host current host base url
+ * @property string $api_url api endpoint url starting with slash(/)
+ *
+ * @package MahShamim\CityBank
+ */
 class Config
 {
     /**
@@ -16,83 +28,75 @@ class Config
     const MODE_SANDBOX = 'sandbox';
 
     /**
-     * @var string
+     * Index array list of headers
+     *
+     * @var string[]
      */
-    private $mode = 'sandbox';
-
-    /**
-     * @var array
-     */
-    public $headers = [];
-
-    /**
-     * @var string
-     */
-    private $username;
-
-    /**
-     * @var string
-     */
-    private $password;
-
-    /**
-     * @var string
-     */
-    private $company;
-
-    /**
-     * @var string
-     */
-    private $host;
-
-    /**
-     * @var string
-     */
-    private $baseUrl;
-
-    /**
-     * @var array[]
-     */
-    public $urls = [
-        self::MODE_SANDBOX => [
-            'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
-            'api_url' => '/dynamicApi.php?wsdl',
-        ],
-        self::MODE_LIVE => [
-            'base_url' => 'https://nrbms.thecitybank.com',
-            'api_url' => '/dynamicApi.php?wsdl',
-        ]
+    private $headers = [
+        'Content-type: text/xml;charset="utf-8"'
     ];
 
-    public function __construct($username, $password, $company, $mode = 'sandbox')
+    /**
+     * Config magic variable container
+     *
+     * @var array
+     */
+    protected $values = [];
+
+    /**
+     * Config constructor.
+     * @param array $options
+     */
+    public function __construct($options = [])
     {
-        $this->setUsername($username);
-
-        $this->setPassword($password);
-
-        $this->setCompany($company);
-
-        $this->setMode($mode);
-
-        $this->setBaseUrl($this->urls[$this->getMode()]['base_url']);
-
+        foreach ($options as $property => $value) {
+            $this->{$property} = $value;
+        }
     }
 
     /**
-     * @return string
+     * Magic getter function for dynamic value stored in values array
+     *
+     * @param $key
+     * @return mixed
      */
-    public function getMode()
+    public function __get($key)
     {
-        return $this->mode;
+        return $this->values[$key];
+    }
+
+    /**
+     * Magic setter function for dynamic value stored in values array
+     *
+     * @param $key
+     * @param $value
+     * @return void
+     */
+    public function __set($key, $value)
+    {
+        switch ($key) {
+
+            case 'base_url' :
+                $this->setBaseUrl($value);
+                break;
+
+            case 'mode' :
+                $this->setMode($value);
+                break;
+
+            default :
+                $this->values[$key] = $value;
+                break;
+        }
     }
 
     /**
      * @param string $mode
      */
-    public function setMode($mode)
+    public function setMode($mode, $key = 'mode')
     {
         if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
-            $this->mode = $mode;
+            $this->values[$key] = $mode;
         } else {
             throw new InvalidArgumentException("Invalid value $mode passed to API mode setter");
         }
@@ -115,73 +119,17 @@ class Config
     }
 
     /**
-     * @return string
-     */
-    public function getUsername()
-    {
-        return $this->username;
-    }
-
-    /**
-     * @param string $username
-     */
-    public function setUsername($username)
-    {
-        $this->username = $username;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
-    /**
-     * @param string $password
-     */
-    public function setPassword($password)
-    {
-        $this->password = $password;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCompany()
-    {
-        return $this->company;
-    }
-
-    /**
-     * @param string $company
-     */
-    public function setCompany($company)
-    {
-        $this->company = $company;
-    }
-
-    /**
      * @param string $url
      */
-    public function setBaseUrl($url)
+    public function setBaseUrl($url, $key = 'base_url')
     {
         $metaData = parse_url($url);
 
         if (isset($metaData['host'])) {
-            $this->host = $metaData['host'];
-            $this->baseUrl = $url;
+            $this->values['host'] = $metaData['host'];
+            $this->values[$key] = $url;
         } else {
             throw new InvalidArgumentException("Invalid value ($url) is not have host value");
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function getBaseUrl()
-    {
-        return $this->baseUrl;
     }
 }
