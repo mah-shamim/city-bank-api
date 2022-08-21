@@ -77,11 +77,11 @@ class Config
         switch ($key) {
 
             case 'base_url' :
-                $this->setBaseUrl($value);
+                $this->configBaseUrl($value);
                 break;
 
             case 'mode' :
-                $this->setMode($value);
+                $this->configMode($value);
                 break;
 
             default :
@@ -93,7 +93,7 @@ class Config
     /**
      * @param string $mode
      */
-    public function setMode($mode)
+    public function configMode($mode)
     {
         if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
             $this->values['mode'] = $mode;
@@ -121,7 +121,7 @@ class Config
     /**
      * @param string $url
      */
-    public function setBaseUrl($url)
+    public function configBaseUrl($url)
     {
         $metaData = parse_url($url);
 
