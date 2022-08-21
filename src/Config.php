@@ -93,10 +93,10 @@ class Config
     /**
      * @param string $mode
      */
-    public function setMode($mode, $key = 'mode')
+    public function setMode($mode)
     {
         if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
-            $this->values[$key] = $mode;
+            $this->values['mode'] = $mode;
         } else {
             throw new InvalidArgumentException("Invalid value $mode passed to API mode setter");
         }
@@ -121,13 +121,13 @@ class Config
     /**
      * @param string $url
      */
-    public function setBaseUrl($url, $key = 'base_url')
+    public function setBaseUrl($url)
     {
         $metaData = parse_url($url);
 
         if (isset($metaData['host'])) {
             $this->values['host'] = $metaData['host'];
-            $this->values[$key] = $url;
+            $this->values['base_url'] = $url;
         } else {
             throw new InvalidArgumentException("Invalid value ($url) is not have host value");
         }
