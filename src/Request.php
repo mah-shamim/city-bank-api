@@ -144,17 +144,11 @@ class Request
                 $this->handleException($client);
             }
 
-            logger($response);
-
             $formattedResponse = str_replace([
                 '<SOAP-ENV:Body>',
                 '</SOAP-ENV:Body>',
                 'xmlns:ns1="urn:dynamicapi"',
-                'ns1:'],
-                '',
-                $response
-            );
-
+                'ns1:'], '', $response);
 
         } catch (Exception $exception) {
             $this->handleException($client);
