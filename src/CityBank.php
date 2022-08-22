@@ -26,7 +26,7 @@ class CityBank
     {
         $this->config = new Config($config);
 
-        $this->request = new Request();
+        $this->request = new Request($this->config);
 
     }
 
@@ -49,17 +49,7 @@ class CityBank
             ]
         ];
 
-        $this->request->connect($payload, 'doAuthenticate');
-
-        $authPayload = trim('
-            <auth_info xsi:type="urn:auth_info">
-                <username xsi:type="xsd:string">' . $this->config->username . '</username>
-                <password xsi:type="xsd:string">' . $this->config->password . '</password>
-                <exchange_company xsi:type="xsd:string">' . $this->config->company . '</exchange_company>
-            </auth_info>
-            ');
-
-        $response = $this->request->connect($authPayload, );
+        $response = $this->request->method( 'doAuthenticate')->payload($payload)->connect();
 
         $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
 
@@ -70,22 +60,6 @@ class CityBank
         return $return;
     }
 
-
-    /**
-     * @param $request
-     * @param $method
-     * @return void
-     *
-     * @throws Exception
-     */
-    private function handleException($request, $method)
-    {
-        if ($this->getConfig()['mode'] == self::MODE_LIVE) {
-            logger("{$method} CURL Request Error : " . curl_error($request));
-        } else {
-            throw new Exception("{$method} CURL Request Error : " . curl_error($request), curl_errno($request));
-        }
-    }
 
     /**
      * Do transfer service will help you to send a new transaction by providing following parameter value

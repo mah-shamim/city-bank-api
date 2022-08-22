@@ -4,6 +4,7 @@
 namespace MahShamim\CityBank;
 
 
+use Exception;
 use SimpleXMLElement;
 
 class Request
@@ -13,9 +14,13 @@ class Request
      */
     private $config;
 
+    private $method;
+
+    private $payload;
+
     /**
      * Request constructor.
-     * @param $config
+     * @param Config $config
      */
     public function __construct($config)
     {
@@ -23,57 +28,39 @@ class Request
     }
 
     /**
-     * @param $payload
      * @param $method
-     * @return false|SimpleXMLElement|string|null
+     * @return $this
      */
-    public function connect($payload, $method)
+    public function method($method)
     {
-        $xmlString = $this->preparePayload($payload, $method);
+        $this->method = $method;
 
-        $contentLength = strlen($payload);
-
-        $this->config->setHeaders(
-            "Content-length: {$contentLength}",
-            "SOAPAction: {$method}"
-        );
-
-        $formattedResponse = '';
-
-        if (!function_exists('curl_version')) {
-            throw new Exception('Curl extension is not enabled.', 500);
-        }
-
-        $request = curl_init();
-
-        try {
-            curl_setopt($request, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($request, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-            curl_setopt($request, CURLOPT_TIMEOUT, 0);
-            curl_setopt($request, CURLOPT_POST, true);
-            curl_setopt($request, CURLOPT_POSTFIELDS, $payload); // the SOAP request
-            curl_setopt($request, CURLOPT_HTTPHEADER, $this->getHeaders());
-            curl_setopt($request, CURLOPT_URL, $this->getApiUrl());
-            $response = curl_exec($request);
-            if ($response === false) {
-                $this->handleException($request, $method);
-            }
-
-            $formattedResponse = str_replace(['<SOAP-ENV:Body>', '</SOAP-ENV:Body>', 'xmlns:ns1="urn:dynamicapi"', 'ns1:'], '', $response);
-
-            logger("{$method} <br/> {$formattedResponse}");
-        } catch (Exception $exception) {
-            $this->handleException($request, $method);
-        } finally {
-            curl_close($request);
-        }
-
-        return simplexml_load_string($formattedResponse);
+        return $this;
     }
 
-    public function preparePayload($data, $method)
+    /**
+     * @param $data
+     * @return Request
+     * @throws Exception
+     */
+    public function payload($data)
     {
+        $this->payload = $this->preparePayload($data);
+
+        return $this;
+    }
+
+    /**
+     * @param $data
+     * @return string
+     * @throws Exception
+     */
+    public function preparePayload($data)
+    {
+        if (empty($this->method)) {
+            throw new Exception("Payload Generate Exception , Request method is set.");
+        }
+
         $content = '';
 
         foreach ($data as $wrapper => $fields) {
@@ -84,29 +71,116 @@ class Request
             $content .= '</' . $wrapper . '>' . PHP_EOL;
         }
 
-        return $this->wrapper($content, $data);
+        return $this->wrapper($content);
     }
 
+    /**
+     * @return array
+     */
+    private function curlOptions()
+    {
+        $contentLength = strlen($this->payload);
+
+        $this->config->setHeaders(
+            "Content-length: {$contentLength}",
+            "SOAPAction: {$this->method}"
+        );
+
+        return [
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $this->payload,
+            CURLOPT_HTTPHEADER => $this->config->getHeaders(),
+            CURLOPT_URL => $this->config->api_url,
+        ];
+    }
+
+    /**
+     * @return false|SimpleXMLElement|string|null
+     * @throws Exception
+     */
+    public function connect()
+    {
+        $formattedResponse = '';
+
+        if (!function_exists('curl_version')) {
+            throw new Exception('Curl extension is not enabled.', 500);
+        }
+
+        $client = curl_init();
+
+        try {
+            curl_setopt_array($client, $this->curlOptions());
+
+            $response = curl_exec($client);
+
+            if ($response === false) {
+                $this->handleException($client);
+            }
+
+            $formattedResponse = str_replace([
+                '<SOAP-ENV:Body>',
+                '</SOAP-ENV:Body>',
+                'xmlns:ns1="urn:dynamicapi"',
+                'ns1:'],
+                '',
+                $response
+            );
+
+            logger("{$this->method} <br/> {$formattedResponse}");
+
+        } catch (Exception $exception) {
+            $this->handleException($client);
+        } finally {
+            curl_close($client);
+            $this->cleanup();
+        }
+
+        return simplexml_load_string($formattedResponse);
+    }
+
+    private function cleanup()
+    {
+        $this->payload = '';
+        $this->method = '';
+    }
 
     /**
      * Wrapping the request object as proper xml object stream
      *
      * @param $content
-     * @param $method
      * @return string
      */
-    private function wrapper($content, $method)
+    private function wrapper($content)
     {
         return trim('
         <?xml version="1.0" encoding="utf-8"?>
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                    <urn:' . $this->method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
                         ' . $content . '
-                    </urn:' . $method . '>
+                    </urn:' . $this->method . '>
                 </soapenv:Body>
             </soapenv:Envelope>
         ');
+    }
+
+    /**
+     * @param $request
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function handleException($request)
+    {
+        if ($this->config->mode == Config::MODE_LIVE) {
+            logger("{$this->method} Request Error : " . curl_error($request));
+        } else {
+            throw new Exception("{$this->method} Request Error : " . curl_error($request), curl_errno($request));
+        }
     }
 }
