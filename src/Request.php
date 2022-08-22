@@ -163,7 +163,9 @@ class Request
         }
         \Log::info($formattedResponse);
 
-        return simplexml_load_string($formattedResponse);
+        $sample = simplexml_load_string($formattedResponse);
+        logger("sample" . $sample);
+        return $sample;
     }
 
     /**
