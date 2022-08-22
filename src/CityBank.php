@@ -50,7 +50,10 @@ class CityBank
             ]
         ];
 
-        $response = $this->request->method('doAuthenticate')->payload($payload)->connect();
+        $response = $this->request
+            ->method('doAuthenticate')
+            ->payload($payload)
+            ->connect();
 
         $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
 

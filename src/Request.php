@@ -161,6 +161,7 @@ class Request
             curl_close($client);
             $this->cleanup();
         }
+        \Log::info($formattedResponse);
 
         return simplexml_load_string($formattedResponse);
     }
