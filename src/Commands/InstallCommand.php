@@ -68,11 +68,9 @@ class InstallCommand extends Command
         $envPath = base_path('.env');
 
         if (file_exists($envPath)) {
-            $envContent = file_get_contents($envPath);
-
             $apiEnvVariableContent = $this->envVariables();
 
-            if (file_put_contents($envPath, $envContent . $apiEnvVariableContent, FILE_APPEND) !== false) {
+            if (file_put_contents($envPath, $apiEnvVariableContent, FILE_APPEND) !== false) {
                 $this->info('Environment variables added successfully.');
                 return self::SUCCESS;
             }
