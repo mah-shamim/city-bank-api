@@ -64,6 +64,38 @@ class Request
     }
 
     /**
+     * Authenticate service will provide you the access token by providing following parameter value.
+     *
+     * @return self
+     * @throws Exception
+     */
+    public function token()
+    {
+        $payload = [
+            'auth_info' => [
+                'username' => $this->config->username,
+                'password' => $this->config->password,
+                'exchange_company' => $this->config->company,
+            ]
+        ];
+
+        $response = $this
+            ->method(Config::METHOD_AUTHENTICATE)
+            ->payload($payload)
+            ->connect();
+
+        if ($response instanceof \SimpleXMLElement) {
+            $jsonResponse = json_decode($response->doAuthenticateResponse->Response, true);
+
+            if ($jsonResponse['token'] != Config::AUTH_FAILED) {
+                $this->token = $jsonResponse['token'];
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Render the payload array to a xml response string
      *
      * @return string
@@ -72,7 +104,10 @@ class Request
     private function preparePayload()
     {
         if (empty($this->method)) {
-            throw new Exception("Payload Generate Exception , Request method is set.");
+            throw new Exception("Payload Generate Exception , Request method is missing.");
+        }
+        if ($this->method != Config::METHOD_AUTHENTICATE && empty($this->token)) {
+            throw new Exception("Payload Generate Exception , Request token is missing.");
         }
 
         $content = "";
@@ -80,6 +115,10 @@ class Request
         foreach ($this->payload as $wrapper => $fields) {
 
             $content .= "\t\t\t\t<{$wrapper} xsi:type=\"urn:{$wrapper}\">\n";
+
+            if ($this->method != Config::METHOD_AUTHENTICATE) {
+                $fields['token'] = $this->token;
+            }
 
             foreach ($fields as $title => $field) {
 
@@ -159,15 +198,7 @@ class Request
             $this->cleanup();
         }
 
-        $xml = simplexml_load_string($formattedResponse);
-
-        dump([
-            "raw" => $response,
-            "formatted" => $formattedResponse,
-            "xml" => $xml
-        ]);
-
-        return $xml;
+        return simplexml_load_string($formattedResponse);
     }
 
     /**

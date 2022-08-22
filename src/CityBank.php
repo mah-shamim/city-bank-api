@@ -6,7 +6,6 @@ use Exception;
 
 class CityBank
 {
-
     /**
      * @var Config
      */
@@ -28,42 +27,6 @@ class CityBank
 
         $this->request = new Request($this->config);
 
-    }
-
-    /**
-     * Authenticate service will provide you the access token by providing following parameter value.
-     * API fields (username*, password*, exchangeCompany*)
-     *
-     * @since 2.0.0
-     * @return mixed
-     * @throws Exception
-     */
-    public function authenticate()
-    {
-        $return = 'AUTH_FAILED';
-
-        $payload = [
-            'auth_info' => [
-                'username' => $this->config->username,
-                'password' => $this->config->password,
-                'exchange_company' => $this->config->company,
-            ]
-        ];
-
-        $response = $this->request
-            ->method('doAuthenticate')
-            ->payload($payload)
-            ->connect();
-
-        logger($response);
-
-        $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
-
-        if ($returnValue['message'] == 'Successful') {
-            $return = $returnValue['token'];
-        }
-
-        return $return;
     }
 
     /**
@@ -216,12 +179,26 @@ class CityBank
     /**
      * Get balance service will help to know the available balance
      *
-     * @return mixed
+     * @return void
      * @throws Exception
      */
     public function balance()
     {
-        $doAuthenticate = $this->authenticate();
+        $payload = [
+            'get_balance' => []
+        ];
+
+        $response = $this->request
+            ->method(Config::METHOD_BALANCE)
+            ->payload($payload)
+            ->connect();
+
+        if ($response instanceof \SimpleXMLElement) {
+            $jsonResponse = json_decode($response->getBalanceResponse->Response, true);
+
+            dump($jsonResponse);
+        }
+/*        $doAuthenticate = $this->authenticate();
         if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
             $xml_string = '
                 <get_balance xsi:type="urn:get_balance">
@@ -238,7 +215,7 @@ class CityBank
         else:
             $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
         endif;
-        return $returnValue;
+        return $returnValue;*/
     }
 
     /**
