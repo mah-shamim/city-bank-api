@@ -3,6 +3,7 @@
 namespace MahShamim\CityBank\Commands;
 
 use Illuminate\Console\Command;
+use MahShamim\CityBank\Config;
 
 class InstallCommand extends Command
 {
@@ -72,13 +73,11 @@ class InstallCommand extends Command
             $apiEnvVariableContent = $this->envVariables();
 
             if (file_put_contents($envPath, $envContent . $apiEnvVariableContent, FILE_APPEND) !== false) {
-                $this->error('Environment variables added successfully.');
-
+                $this->info('Environment variables added successfully.');
                 return self::SUCCESS;
             }
 
             $this->error('Environment variables update failed.');
-
             return self::FAILURE;
         }
 
@@ -95,18 +94,18 @@ class InstallCommand extends Command
      */
     protected function envVariables($overwrite = false)
     {
-        $currentConfig = config('city-bank');
+        $currentConfig = config('city-bank.sandbox');
 
-        $mode = 'sandbox';
-        $username = '';
-        $password = '';
-        $company = '';
+        $mode = (isset($currentConfig['mode']) ? $currentConfig['mode'] : Config::MODE_SANDBOX);
+        $username = (isset($currentConfig['username']) ? $currentConfig['username'] : '');
+        $password = (isset($currentConfig['password']) ? $currentConfig['password'] : '');
+        $company = (isset($currentConfig['company']) ? $currentConfig['company'] : '');
 
-        return "
-    CITY_BANK_API_MODE={$mode}\n
-    CITY_BANK_API_USERNAME={$username}\n
-    CITY_BANK_API_PASSWORD={$password}\n
-    CITY_BANK_EXCHANGE_COMPANY={$company}\n
-    ";
+        return implode("\n", [
+            "CITY_BANK_API_MODE={$mode}",
+            "CITY_BANK_API_USERNAME={$username}",
+            "CITY_BANK_API_PASSWORD={$password}",
+            "CITY_BANK_EXCHANGE_COMPANY={$company}"
+        ]);
     }
 }
