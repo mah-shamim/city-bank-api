@@ -71,7 +71,7 @@ class InstallCommand extends Command
 
             $apiEnvVariableContent = $this->envVariables();
 
-            if (file_put_contents($envPath, $envContent.$apiEnvVariableContent, FILE_APPEND) !== false) {
+            if (file_put_contents($envPath, $envContent . $apiEnvVariableContent, FILE_APPEND) !== false) {
                 $this->error('Environment variables added successfully.');
 
                 return self::SUCCESS;
@@ -90,7 +90,7 @@ class InstallCommand extends Command
     /**
      * Return the env values
      *
-     * @param  bool  $overwrite
+     * @param bool $overwrite
      * @return string
      */
     protected function envVariables($overwrite = false)

@@ -30,43 +30,12 @@ class CityBank
 
     }
 
-
-    /**
-     * Authenticate service will provide you the access token
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    public function authenticate()
-    {
-        $return = 'AUTH_FAILED';
-
-        $payload = [
-            'auth_info' => [
-                'username' => $this->config->username,
-                'password' => $this->config->password,
-                'exchange_company' => $this->config->company,
-            ]
-        ];
-
-        $response = $this->request->method( 'doAuthenticate')->payload($payload)->connect();
-
-        $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
-
-        if ($returnValue['message'] == 'Successful') {
-            $return = $returnValue['token'];
-        }
-
-        return $return;
-    }
-
-
     /**
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
-     * @param $inputData
+     * @param $transferData
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function transfer($transferData)
     {
@@ -145,12 +114,41 @@ class CityBank
     }
 
     /**
+     * Authenticate service will provide you the access token
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function authenticate()
+    {
+        $return = 'AUTH_FAILED';
+
+        $payload = [
+            'auth_info' => [
+                'username' => $this->config->username,
+                'password' => $this->config->password,
+                'exchange_company' => $this->config->company,
+            ]
+        ];
+
+        $response = $this->request->method('doAuthenticate')->payload($payload)->connect();
+
+        $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
+
+        if ($returnValue['message'] == 'Successful') {
+            $return = $returnValue['token'];
+        }
+
+        return $return;
+    }
+
+    /**
      * Get transaction status service will help you to get the transaction status
      *
      * @param $inputs_data
      * reference_no like system transaction number
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function transactionStatus($inputs_data)
     {
@@ -181,7 +179,7 @@ class CityBank
      *
      * @param array reference_no like system transaction number, amend_query like cancel/amendment
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function cancel($transferData)
     {
@@ -212,7 +210,7 @@ class CityBank
      * Get balance service will help to know the available balance
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function balance()
     {
@@ -243,7 +241,7 @@ class CityBank
      * receiver_first_name like receiver name
      * bank_account_number like receiver bkash number or wallet number
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function bkashCustomerValidation($inputData)
     {
@@ -276,7 +274,7 @@ class CityBank
      * @param $inputData
      * bank_account_number like receiver bkash number or wallet number
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function bkashValidation($inputData)
     {
@@ -307,7 +305,7 @@ class CityBank
      *
      * @param $input_data
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function doBkashTransfer($inputData)
     {
@@ -370,7 +368,7 @@ class CityBank
      * @param $inputData
      * reference_no like system transaction number
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function getBkashTnxStatus($inputData)
     {

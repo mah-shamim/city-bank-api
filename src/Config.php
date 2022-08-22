@@ -4,6 +4,7 @@
 namespace MahShamim\CityBank;
 
 
+use Exception;
 use InvalidArgumentException;
 
 /**
@@ -45,6 +46,17 @@ class Config
     private $values = [];
 
     /**
+     * Config constructor.
+     * @param array $options
+     */
+    public function __construct($options = [])
+    {
+        foreach ($options as $property => $value) {
+            $this->{$property} = $value;
+        }
+    }
+
+    /**
      * Magic getter function for dynamic
      * value stored in values array
      *
@@ -54,44 +66,6 @@ class Config
     public function __get($key)
     {
         return $this->values[$key];
-    }
-
-    /**
-     * Magic isset function for handle unassigned
-     * value stored in values array exception
-     * @param $key
-     * @return void
-     * @throws \Exception
-     */
-    public function __isset($key)
-    {
-        if (!array_key_exists($key, $this->values)) {
-            throw  new \Exception("Trying to access an undefined magic property $key");
-        }
-    }
-
-    /**
-     * Removed magic property from value array
-     *
-     * @param $key
-     */
-    public function __unset($key)
-    {
-        if (array_key_exists($key, $this->values)) {
-            unset($this->values[$key]);
-        }
-
-    }
-
-    /**
-     * Config constructor.
-     * @param array $options
-     */
-    public function __construct($options = [])
-    {
-        foreach ($options as $property => $value) {
-            $this->{$property} = $value;
-        }
     }
 
     /**
@@ -125,18 +99,6 @@ class Config
     }
 
     /**
-     * @param string $mode
-     */
-    public function configMode($mode)
-    {
-        if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
-            $this->values['mode'] = $mode;
-        } else {
-            throw new InvalidArgumentException("Invalid value $mode passed to API mode setter");
-        }
-    }
-
-    /**
      * @param string $url
      */
     public function configBaseUrl($url)
@@ -161,6 +123,45 @@ class Config
     public function configApiUrl($url)
     {
         $this->values['api_url'] = ($this->base_url . $url);
+    }
+
+    /**
+     * @param string $mode
+     */
+    public function configMode($mode)
+    {
+        if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
+            $this->values['mode'] = $mode;
+        } else {
+            throw new InvalidArgumentException("Invalid value $mode passed to API mode setter");
+        }
+    }
+
+    /**
+     * Magic isset function for handle unassigned
+     * value stored in values array exception
+     * @param $key
+     * @return void
+     * @throws Exception
+     */
+    public function __isset($key)
+    {
+        if (!array_key_exists($key, $this->values)) {
+            throw  new Exception("Trying to access an undefined magic property $key");
+        }
+    }
+
+    /**
+     * Removed magic property from value array
+     *
+     * @param $key
+     */
+    public function __unset($key)
+    {
+        if (array_key_exists($key, $this->values)) {
+            unset($this->values[$key]);
+        }
+
     }
 
     /**

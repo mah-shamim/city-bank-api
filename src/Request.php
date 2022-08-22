@@ -75,27 +75,24 @@ class Request
     }
 
     /**
-     * @return array
+     * Wrapping the request object as proper xml object stream
+     *
+     * @param $content
+     * @return string
      */
-    private function curlOptions()
+    private function wrapper($content)
     {
-        $contentLength = strlen($this->payload);
-
-        $this->config->setHeaders(
-            "Content-length: {$contentLength}",
-            "SOAPAction: {$this->method}"
-        );
-
-        return [
-            CURLOPT_SSL_VERIFYPEER => 0,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $this->payload,
-            CURLOPT_HTTPHEADER => $this->config->getHeaders(),
-            CURLOPT_URL => $this->config->api_url,
-        ];
+        return trim('
+        <?xml version="1.0" encoding="utf-8"?>
+            <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <urn:' . $this->method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        ' . $content . '
+                    </urn:' . $this->method . '>
+                </soapenv:Body>
+            </soapenv:Envelope>
+        ');
     }
 
     /**
@@ -113,7 +110,11 @@ class Request
         $client = curl_init();
 
         try {
-            curl_setopt_array($client, $this->curlOptions());
+            $curlOptions = $this->curlOptions();
+
+            dd($curlOptions);
+
+            curl_setopt_array($client, $curlOptions);
 
             $response = curl_exec($client);
 
@@ -142,31 +143,28 @@ class Request
         return simplexml_load_string($formattedResponse);
     }
 
-    private function cleanup()
-    {
-        $this->payload = '';
-        $this->method = '';
-    }
-
     /**
-     * Wrapping the request object as proper xml object stream
-     *
-     * @param $content
-     * @return string
+     * @return array
      */
-    private function wrapper($content)
+    private function curlOptions()
     {
-        return trim('
-        <?xml version="1.0" encoding="utf-8"?>
-            <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
-                <soapenv:Header/>
-                <soapenv:Body>
-                    <urn:' . $this->method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        ' . $content . '
-                    </urn:' . $this->method . '>
-                </soapenv:Body>
-            </soapenv:Envelope>
-        ');
+        $contentLength = strlen($this->payload);
+
+        $this->config->setHeaders(
+            "Content-length: {$contentLength}",
+            "SOAPAction: {$this->method}"
+        );
+
+        return [
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $this->payload,
+            CURLOPT_HTTPHEADER => $this->config->getHeaders(),
+            CURLOPT_URL => $this->config->api_url,
+        ];
     }
 
     /**
@@ -182,5 +180,11 @@ class Request
         } else {
             throw new Exception("{$this->method} Request Error : " . curl_error($request), curl_errno($request));
         }
+    }
+
+    private function cleanup()
+    {
+        $this->payload = '';
+        $this->method = '';
     }
 }
