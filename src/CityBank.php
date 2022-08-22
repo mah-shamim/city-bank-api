@@ -55,6 +55,8 @@ class CityBank
             ->payload($payload)
             ->connect();
 
+        logger($response);
+
         $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
 
         if ($returnValue['message'] == 'Successful') {
