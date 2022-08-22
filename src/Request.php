@@ -127,6 +127,8 @@ class Request
     {
         $formattedResponse = '';
 
+        $response = '';
+
         if (!function_exists('curl_version')) {
             throw new Exception('Curl extension is not enabled.', 500);
         }
@@ -157,7 +159,15 @@ class Request
             $this->cleanup();
         }
 
-        return simplexml_load_string($formattedResponse);
+        $xml = simplexml_load_string($formattedResponse);
+
+        dump([
+            "raw" => $response,
+            "formatted" => $formattedResponse,
+            "xml" => $xml
+        ]);
+
+        return $xml;
     }
 
     /**
