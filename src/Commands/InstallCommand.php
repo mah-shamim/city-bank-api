@@ -100,10 +100,12 @@ class InstallCommand extends Command
         $company = (isset($currentConfig['company']) ? $currentConfig['company'] : '');
 
         return implode("\n", [
+            "\n",
             "CITY_BANK_API_MODE={$mode}",
             "CITY_BANK_API_USERNAME={$username}",
             "CITY_BANK_API_PASSWORD={$password}",
-            "CITY_BANK_EXCHANGE_COMPANY={$company}"
+            "CITY_BANK_EXCHANGE_COMPANY={$company}",
+            "\n"
         ]);
     }
 }
