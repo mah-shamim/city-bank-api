@@ -17,7 +17,7 @@ class CityBankServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../config/city-bank.php' => config_path('city-bank.php'),
-        ]);
+        ], 'city-bank-config');
 
         if ($this->app->runningInConsole()) {
             $this->commands(InstallCommand::class);
@@ -36,8 +36,6 @@ class CityBankServiceProvider extends ServiceProvider
             'city-bank'
         );
 
-        $this->app->alias('city-bank', CityBank::class);
-
         $this->app->singleton('city-bank', function ($app) {
 
             $mode = Config::get('city-bank.mode');
@@ -46,5 +44,7 @@ class CityBankServiceProvider extends ServiceProvider
 
             return new CityBank($config);
         });
+
+        $this->app->alias('city-bank', CityBank::class);
     }
 }
