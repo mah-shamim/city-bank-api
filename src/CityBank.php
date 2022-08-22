@@ -31,6 +31,37 @@ class CityBank
     }
 
     /**
+     * Authenticate service will provide you the access token by providing following parameter value.
+     * API fields (username*, password*, exchangeCompany*)
+     *
+     * @since 2.0.0
+     * @return mixed
+     * @throws Exception
+     */
+    public function authenticate()
+    {
+        $return = 'AUTH_FAILED';
+
+        $payload = [
+            'auth_info' => [
+                'username' => $this->config->username,
+                'password' => $this->config->password,
+                'exchange_company' => $this->config->company,
+            ]
+        ];
+
+        $response = $this->request->method('doAuthenticate')->payload($payload)->connect();
+
+        $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
+
+        if ($returnValue['message'] == 'Successful') {
+            $return = $returnValue['token'];
+        }
+
+        return $return;
+    }
+
+    /**
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
      * @param $transferData
@@ -111,35 +142,6 @@ class CityBank
             $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
         endif;
         return $returnValue;
-    }
-
-    /**
-     * Authenticate service will provide you the access token
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    public function authenticate()
-    {
-        $return = 'AUTH_FAILED';
-
-        $payload = [
-            'auth_info' => [
-                'username' => $this->config->username,
-                'password' => $this->config->password,
-                'exchange_company' => $this->config->company,
-            ]
-        ];
-
-        $response = $this->request->method('doAuthenticate')->payload($payload)->connect();
-
-        $returnValue = json_decode($response->doAuthenticateResponse->Response, true);
-
-        if ($returnValue['message'] == 'Successful') {
-            $return = $returnValue['token'];
-        }
-
-        return $return;
     }
 
     /**

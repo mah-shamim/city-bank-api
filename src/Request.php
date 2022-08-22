@@ -14,9 +14,20 @@ class Request
      */
     private $config;
 
-    private $method;
+    /**
+     * @var string
+     */
+    private $method = '';
 
-    private $payload;
+    /**
+     * @var array
+     */
+    private $payload = [];
+
+    /**
+     * @var string
+     */
+    private $token = '';
 
     /**
      * Request constructor.
@@ -28,7 +39,7 @@ class Request
     }
 
     /**
-     * @param $method
+     * @param string $method
      * @return $this
      */
     public function method($method)
@@ -39,36 +50,49 @@ class Request
     }
 
     /**
-     * @param $data
-     * @return Request
+     * @param array $data
+     * @return $this
      * @throws Exception
      */
-    public function payload($data)
+    public function payload(array $data)
     {
-        $this->payload = $this->preparePayload($data);
+        if (is_array($data)) {
+            $this->payload = $data;
+        }
 
         return $this;
     }
 
     /**
-     * @param $data
+     * Render the payload array to a xml response string
+     *
      * @return string
      * @throws Exception
      */
-    public function preparePayload($data)
+    private function preparePayload()
     {
         if (empty($this->method)) {
             throw new Exception("Payload Generate Exception , Request method is set.");
         }
 
-        $content = '';
+        $content = "";
 
-        foreach ($data as $wrapper => $fields) {
-            $content .= '<' . $wrapper . ' xsi:type="urn:' . $wrapper . '">' . PHP_EOL;
+        foreach ($this->payload as $wrapper => $fields) {
+
+            $content .= "\t\t\t\t<{$wrapper} xsi:type=\"urn:{$wrapper}\">\n";
+
             foreach ($fields as $title => $field) {
-                $content .= ('<' . $title . ' xsi:type="xsd:' . gettype($field) . '">' . $field . '</' . $title . '>' . PHP_EOL);
+
+                $type = gettype($field);
+
+                if ($type == 'NULL') {
+                    $type = "string";
+                }
+
+                $content .= ("\t\t\t\t\t<{$title} xsi:type=\"xsd:{$type}\">{$field}</{$title}>\n");
             }
-            $content .= '</' . $wrapper . '>' . PHP_EOL;
+
+            $content .= "\t\t\t\t</{$wrapper}>";
         }
 
         return $this->wrapper($content);
@@ -143,10 +167,13 @@ class Request
 
     /**
      * @return array
+     * @throws Exception
      */
     private function curlOptions()
     {
-        $contentLength = strlen($this->payload);
+        $xmlString = $this->preparePayload();
+
+        $contentLength = strlen($xmlString);
 
         $this->config->setHeaders(
             "Content-length: {$contentLength}",
@@ -159,7 +186,7 @@ class Request
             CURLOPT_HTTPAUTH => CURLAUTH_ANY,
             CURLOPT_TIMEOUT => 0,
             CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $this->payload,
+            CURLOPT_POSTFIELDS => $xmlString,
             CURLOPT_HTTPHEADER => $this->config->getHeaders(),
             CURLOPT_URL => $this->config->api_url,
         ];
