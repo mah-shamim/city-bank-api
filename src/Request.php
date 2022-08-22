@@ -144,6 +144,8 @@ class Request
                 $this->handleException($client);
             }
 
+            logger($response);
+
             $formattedResponse = str_replace([
                 '<SOAP-ENV:Body>',
                 '</SOAP-ENV:Body>',
@@ -153,7 +155,6 @@ class Request
                 $response
             );
 
-            logger("{$this->method} <br/> {$formattedResponse}");
 
         } catch (Exception $exception) {
             $this->handleException($client);
@@ -161,11 +162,8 @@ class Request
             curl_close($client);
             $this->cleanup();
         }
-        \Log::info($formattedResponse);
 
-        $sample = simplexml_load_string($formattedResponse);
-        logger("sample" . $sample);
-        return $sample;
+        return simplexml_load_string($formattedResponse);
     }
 
     /**
