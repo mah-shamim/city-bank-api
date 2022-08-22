@@ -112,8 +112,6 @@ class Request
         try {
             $curlOptions = $this->curlOptions();
 
-            dd($curlOptions);
-
             curl_setopt_array($client, $curlOptions);
 
             $response = curl_exec($client);
