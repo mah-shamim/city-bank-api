@@ -104,10 +104,13 @@ class Request
     private function preparePayload()
     {
         if (empty($this->method)) {
-            throw new Exception("Payload Generate Exception , Request method is missing.");
+            throw new Exception("Payload method is missing.");
         }
+
+        dd($this->method);
+
         if ($this->method != Config::METHOD_AUTHENTICATE && empty($this->token)) {
-            throw new Exception("Payload Generate Exception , Request token is missing.");
+            throw new Exception("Payload token is missing.");
         }
 
         $content = "";
