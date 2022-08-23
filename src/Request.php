@@ -192,7 +192,7 @@ class Request
                 'ns1:'], '', $response);
 
         } catch (Exception $exception) {
-            $this->handleException($client);
+            $this->handleException($client, $exception);
         } finally {
             curl_close($client);
             $this->cleanup();
@@ -230,16 +230,17 @@ class Request
 
     /**
      * @param $request
+     * @param null $exception
      * @return void
      *
      * @throws Exception
      */
-    private function handleException($request)
+    private function handleException($request, $exception)
     {
         if ($this->config->mode == Config::MODE_LIVE) {
             logger("{$this->method} Request Error : " . curl_error($request));
         } else {
-            throw new Exception("{$this->method} Request Error : " . curl_error($request), curl_errno($request));
+            throw new Exception("{$this->method} Exception : {$exception->getMessage()},  Curl Error: " . curl_error($request), curl_errno($request));
         }
     }
 
