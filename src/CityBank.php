@@ -198,24 +198,24 @@ class CityBank
 
             dump($jsonResponse);
         }
-/*        $doAuthenticate = $this->authenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
-            $xml_string = '
-                <get_balance xsi:type="urn:get_balance">
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                </get_balance>
-            ';
-            $soapMethod = 'getBalance';
-            $response = $this->connect($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->getBalanceResponse->Response, true);
-            else:
-                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
-            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
-        return $returnValue;*/
+        /*        $doAuthenticate = $this->authenticate();
+                if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+                    $xml_string = '
+                        <get_balance xsi:type="urn:get_balance">
+                            <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
+                        </get_balance>
+                    ';
+                    $soapMethod = 'getBalance';
+                    $response = $this->connect($xml_string, $soapMethod);
+                    if (isset($response) && $response != false && $response != null):
+                        $returnValue = json_decode($response->getBalanceResponse->Response, true);
+                    else:
+                        $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
+                    endif;
+                else:
+                    $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
+                endif;
+                return $returnValue;*/
     }
 
     /**
@@ -291,7 +291,7 @@ class CityBank
      * @return mixed
      * @throws Exception
      */
-    public function doBkashTransfer($inputData)
+    public function bkashTransfer($inputData)
     {
         $doAuthenticate = $this->doAuthenticate();
         if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
@@ -354,7 +354,7 @@ class CityBank
      * @return mixed
      * @throws Exception
      */
-    public function getBkashTnxStatus($inputData)
+    public function bkashTnxStatus($inputData)
     {
         $doAuthenticate = $this->doAuthenticate();
         if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):

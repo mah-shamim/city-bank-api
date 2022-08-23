@@ -166,8 +166,6 @@ class Request
     {
         $formattedResponse = '';
 
-        $response = '';
-
         if (!function_exists('curl_version')) {
             throw new Exception('Curl extension is not enabled.', 500);
         }
@@ -181,9 +179,11 @@ class Request
 
             $response = curl_exec($client);
 
-            if ($response === false) {
+            dump($response);
+
+            /*if ($response === false) {
                 $this->handleException($client);
-            }
+            }*/
 
             $formattedResponse = str_replace([
                 '<SOAP-ENV:Body>',
