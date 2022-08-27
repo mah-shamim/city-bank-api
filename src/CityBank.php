@@ -28,7 +28,7 @@ class CityBank
 
         $this->request = new Request($this->config);
 
-        $this->authenticate();
+        $this->doAuthenticate();
     }
 
     /**
@@ -38,13 +38,15 @@ class CityBank
     public function token()
     {
         if (is_null($this->request->token)) {
-            $this->authenticate();
+            $this->doAuthenticate();
         }
 
         return $this->request->token;
     }
 
     /**
+     * Render the api payload as xml string
+     *
      * @return string
      *
      * @throws Exception
@@ -55,9 +57,11 @@ class CityBank
     }
 
     /**
+     * Execute the Request api
+     * @return array
      * @throws Exception
      */
-    public function get()
+    public function execute()
     {
         return $this->request->connect();
     }
@@ -69,7 +73,7 @@ class CityBank
      * @throws Exception
      * @since 2.0.0
      */
-    public function authenticate()
+    public function doAuthenticate()
     {
         $payload = [
             'username' => $this->config->username,
@@ -94,7 +98,7 @@ class CityBank
      * @throws Exception
      * @since 2.0.0
      */
-    public function balance()
+    public function getBalance()
     {
         $payload = [];
 
@@ -109,7 +113,7 @@ class CityBank
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
      * @param $transferData
-     * @return mixed
+     * @return self
      * @throws Exception
      * @since 2.0.0
      */
@@ -189,66 +193,43 @@ class CityBank
     /**
      * Get transaction status service will help you to get the transaction status
      *
-     * @param array  reference_no like system transaction number
-     * @return mixed
+     * @param string $reference
+     * @return self
      * @throws Exception
      * @since 2.0.0
      */
-    public function transactionStatus($inputs_data)
+    public function getTnxStatus($reference)
     {
-        $doAuthenticate = $this->authenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
-            $xml_string = '
-                <transaction_status xsi:type="urn:transaction_status">
-                    <!--You may enter the following 2 items in any order-->
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                    <reference_no xsi:type="xsd:string">' . $inputs_data['reference_no'] . '</reference_no>
-                </transaction_status>
-            ';
-            $soapMethod = 'getTnxStatus';
-            $apiResponse = $this->connect($xml_string, $soapMethod);
-            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
-                $returnValue = json_decode($apiResponse->getTnxStatusResponse->Response, true);
-            else:
-                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
-            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
-        return $returnValue;
+        $payload = ['reference_no' => $reference];
+
+        $this->request
+            ->method(Config::METHOD_TRANSFER_STATUS)
+            ->payload('transaction_status', $payload);
+
+        return $this;
     }
 
     /**
      * Do amendment or cancel service will help you to send the transaction cancel/amendment request
      *
-     * @param array reference_no like system transaction number, amend_query like cancel/amendment
-     * @return mixed
+     * @param string
+     * @param string
+     * @return self
      * @throws Exception
      * @since 2.0.0
      */
-    public function cancel($transferData)
+    public function doAmendmentOrCancel($reference, $details = '?')
     {
-        $doAuthenticate = $this->authenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
-            $xml_string = '
-                <txn_amend_cancel xsi:type="urn:txn_amend_cancel">
-                    <!--You may enter the following 3 items in any order-->
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                    <reference_no xsi:type="xsd:string">' . $transferData['reference_no'] . '</reference_no>
-                    <amend_query xsi:type="xsd:string">' . $transferData['amend_query'] . '</amend_query>
-                </txn_amend_cancel>
-            ';
-            $soapMethod = 'doAmendmentOrCancel';
-            $apiResponse = $this->connect($xml_string, $soapMethod);
-            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
-                $returnValue = json_decode($apiResponse->doAmendmentOrCancelResponse->Response, true);
-            else:
-                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
-            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
-        return $returnValue;
+        $payload = [
+            'reference_no' => $reference,
+            'amend_query' => $details
+        ];
+
+        $this->request
+            ->method(Config::METHOD_AMENDMENT_OR_CANCEL)
+            ->payload('txn_amend_cancel', $payload);
+
+        return $this;
     }
 
     /**
