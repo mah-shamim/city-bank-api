@@ -235,47 +235,63 @@ class CityBank
     /**
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
-     * @param $inputData
-     * bank_account_number like receiver bkash number or wallet number
-     * @return mixed
+     * @param $mobileNumber
+     * @param string $fullName
+     * @return self
      * @throws Exception
      * @since 2.1.0
      */
-    public function bkashValidation($inputData)
+    public function bkashCustomerValidation($mobileNumber, $fullName = '?')
     {
-        $doAuthenticate = $this->doAuthenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
-            $xml_string = '
-                <bkash_customer_details xsi:type="urn:bkash_customer_validation">
-                    <!--You may enter the following 3 items in any order-->
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                    <mobileNumber xsi:type="xsd:string">' . $inputData['bank_account_number'] . '</mobileNumber>
-                </bkash_customer_details>
-            ';
-            $soapMethod = 'getBkashCustomerDetails';
-            $apiResponse = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
-                $returnValue = json_decode($apiResponse->getBkashCustomerDetailsResponse->Response, true);
-            else:
-                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
-            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
-        return $returnValue;
+        $payload = ['mobileNumber' => $mobileNumber];
+
+        if ($fullName != '?') {
+            $payload = ['fullName' => $fullName];
+        }
+
+        $this->request
+            ->method(Config::METHOD_BKASH_CUSTOMER_VALIDATION)
+            ->payload('bkash_customer_validation', $payload);
+
+        return $this;
     }
 
     /**
      * Do bKash transfer service will help you to send a bkash transaction
      *
      * @param array
-     * @return mixed
+     * @return self
      * @throws Exception
      * @since 2.1.0
      */
-    public function bkashTransfer($inputData)
+    public function doBkashTransfer($data = [])
     {
-        $doAuthenticate = $this->doAuthenticate();
+        $payload = [];
+        $payload['amount_in_bdt'] = isset($data['amount_in_bdt']) ? $data['amount_in_bdt'] : '?';
+        $payload['reference_no'] = isset($data['reference_no']) ? $data['reference_no'] : '?';
+        $payload['remitter_name'] = isset($data['remitter_name']) ? $data['remitter_name'] : '?';
+        $payload['remitter_dob'] = isset($data['remitter_dob']) ? $data['remitter_dob'] : '?';
+        $payload['remitter_iqama_no'] = isset($data['remitter_iqama_no']) ? $data['remitter_iqama_no'] : '?';
+        $payload['remitter_id_passport_no'] = isset($data['remitter_id_passport_no']) ? $data['remitter_id_passport_no'] : '2';
+        $payload['remitter_address'] = isset($data['remitter_address']) ? $data['remitter_address'] : '?';
+        $payload['remitter_mobile_no'] = isset($data['remitter_mobile_no']) ? $data['remitter_mobile_no'] : '?';
+        $payload['issuing_country'] = isset($data['issuing_country']) ? $data['issuing_country'] : '?';
+        $payload['beneficiary_name'] = isset($data['beneficiary_name']) ? $data['beneficiary_name'] : '?';
+        $payload['beneficiary_city'] = isset($data['beneficiary_city']) ? $data['beneficiary_city'] : '?';
+        $payload['beneficiary_id_no'] = isset($data['beneficiary_id_no']) ? $data['beneficiary_id_no'] : '?';
+        $payload['beneficiary_id_type'] = isset($data['beneficiary_id_type']) ? $data['beneficiary_id_type'] : '?';
+        $payload['purpose_of_payment'] = isset($data['purpose_of_payment']) ? $data['purpose_of_payment'] : '?';
+        $payload['beneficiary_mobile_phone_no'] = isset($data['beneficiary_mobile_phone_no']) ? $data['beneficiary_mobile_phone_no'] : '?';
+        $payload['beneficiary_address'] = isset($data['beneficiary_address']) ? $data['beneficiary_address'] : '?';
+        $payload['issue_date'] = isset($data['issue_date']) ? $data['issue_date'] : '?';
+
+        $this->request
+            ->method(Config::METHOD_BKASH_CUSTOMER_VALIDATION)
+            ->payload('bkash_customer_validation', $payload);
+
+        return $this;
+
+        /*$doAuthenticate = $this->doAuthenticate();
         if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
             $xml_string = '
                 <do_bkash_transfer xsi:type="urn:do_bkash_transfer">
@@ -325,7 +341,7 @@ class CityBank
         else:
             $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
         endif;
-        return $returnValue;
+        return $returnValue;*/
     }
 
     /**
