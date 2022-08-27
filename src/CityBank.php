@@ -322,7 +322,7 @@ class CityBank
         $payload['remitter_id_passport_no'] = isset($data['remitter_id_passport_no']) ? $data['remitter_id_passport_no'] : '';
         $payload['issuing_country'] = isset($data['issuing_country']) ? $data['issuing_country'] : '';
         $payload['beneficiary_name'] = isset($data['beneficiary_name']) ? $data['beneficiary_name'] : '';
-        if (in_array($payload['mode_of_payment'], array('CBL Account', 'Other Bank'))) {
+        if (in_array($payload['mode_of_payment'], ['CBL Account', 'Other Bank'])) {
             $payload['beneficiary_account_no'] = isset($data['beneficiary_account_no']) ? $data['beneficiary_account_no'] : '';
             $payload['beneficiary_bank_account_type'] = isset($data['beneficiary_bank_account_type']) ? $data['beneficiary_bank_account_type'] : '';
             $payload['beneficiary_bank_name'] = isset($data['beneficiary_bank_name']) ? $data['beneficiary_bank_name'] : '';
@@ -341,7 +341,7 @@ class CityBank
         $payload['special_instruction'] = isset($data['special_instruction']) ? $data['special_instruction'] : 'NA';
         $payload['mode_of_payment'] = isset($data['mode_of_payment']) ? $data['mode_of_payment'] : '';
         $payload['issue_date'] = isset($data['issue_date']) ? $data['issue_date'] : '';
-        for($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $payload['custom_field_name_'.$i] = isset($data['custom_field_name_'.$i]) ? $data['custom_field_name_'.$i] : '?';
             $payload['custom_field_value_'.$i] = isset($data['custom_field_value_'.$i]) ? $data['custom_field_value_'.$i] : '?';
         }
