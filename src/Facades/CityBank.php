@@ -7,15 +7,16 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Class CityBank
  *
- * @method static string transfer(array $transferData = [])
- * @method static string authenticate()
- * @method static string transactionStatus(array $inputs_data = [])
- * @method static string cancel(array $transferData = [])
- * @method static string balance()
- * @method static string bkashCustomerValidation()
- * @method static string bkashValidation()
- * @method static string bkashTransfer()
- * @method static string bkashTnxStatus()
+ * @method static \MahShamim\CityBank\CityBank transfer(array $transferData = [])
+ * @method static \MahShamim\CityBank\CityBank transactionStatus(array $inputs_data = [])
+ * @method static \MahShamim\CityBank\CityBank cancel(array $transferData = [])
+ * @method static \MahShamim\CityBank\CityBank balance()
+ * @method static \MahShamim\CityBank\CityBank bkashValidation()
+ * @method static \MahShamim\CityBank\CityBank bkashTransfer()
+ * @method static \MahShamim\CityBank\CityBank bkashTnxStatus()
+ * @method static string|null token()
+ * @method static string|null toXML()
+ * @method static mixed get()
  *
  * @see \MahShamim\CityBank\CityBank
  */

@@ -19,6 +19,7 @@ class CityBankServiceProvider extends ServiceProvider
             __DIR__ . '/../config/city-bank.php' => config_path('city-bank.php'),
         ], 'city-bank-config');
 
+
         if ($this->app->runningInConsole()) {
             $this->commands(InstallCommand::class);
         }

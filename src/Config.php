@@ -42,9 +42,7 @@ class Config
      *
      * @var string[]
      */
-    private $headers = [
-        'Content-type: text/xml;charset="utf-8"'
-    ];
+    private $headers = ["Content-type" => 'text/xml;charset="utf-8"'];
 
     /**
      * Config magic variable container
@@ -115,7 +113,7 @@ class Config
 
         if (isset($metaData['host'])) {
 
-            $this->setHeaders("Host: {$metaData['host']}");
+            $this->setHeaders("Host", $metaData['host']);
 
             $this->values['host'] = $metaData['host'];
 
@@ -177,15 +175,22 @@ class Config
      */
     public function getHeaders()
     {
-        return $this->headers;
+        $headers = [];
+
+        foreach ($this->headers as $header => $value) {
+            $headers[] = "{$header}: {$value}";
+        }
+
+        return $headers;
     }
 
     /**
-     * @param string|array $headers
+     * @param $header
+     * @param $value
      */
-    public function setHeaders(...$headers)
+    public function setHeaders($header, $value)
     {
-        $this->headers = array_merge($this->headers, $headers);
+        $this->headers[$header] = $value;
     }
 
     /**

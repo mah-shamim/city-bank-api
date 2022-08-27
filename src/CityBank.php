@@ -20,6 +20,7 @@ class CityBank
      * CityBank constructor.
      *
      * @param array $config
+     * @throws Exception
      */
     public function __construct($config = [])
     {
@@ -27,6 +28,81 @@ class CityBank
 
         $this->request = new Request($this->config);
 
+        $this->authenticate();
+    }
+
+    /**
+     * @return string
+     * @throws Exception
+     */
+    public function token()
+    {
+        if (is_null($this->request->token)) {
+            $this->authenticate();
+        }
+
+        return $this->request->token;
+    }
+
+    /**
+     * @return string
+     *
+     * @throws Exception
+     */
+    public function xml()
+    {
+        return $this->request->getXml();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function get()
+    {
+        return $this->request->connect();
+    }
+
+    /**
+     * Authenticate service will provide you the access token by providing following parameter value.
+     *
+     * @return void
+     * @throws Exception
+     * @since 2.0.0
+     */
+    public function authenticate()
+    {
+        $payload = [
+            'username' => $this->config->username,
+            'password' => $this->config->password,
+            'exchange_company' => $this->config->company
+        ];
+
+        $response = $this->request
+            ->method(Config::METHOD_AUTHENTICATE)
+            ->payload('auth_info', $payload)
+            ->connect();
+
+        $this->request->token = (isset($response['token']) && $response['token'] != Config::AUTH_FAILED)
+            ? $response['token']
+            : null;
+    }
+
+    /**
+     * Get balance service will help to know the available balance
+     *
+     * @return self
+     * @throws Exception
+     * @since 2.0.0
+     */
+    public function balance()
+    {
+        $payload = [];
+
+        $this->request = $this->request
+            ->method(Config::METHOD_BALANCE)
+            ->payload('get_balance', $payload);
+
+        return $this;
     }
 
     /**
@@ -35,18 +111,20 @@ class CityBank
      * @param $transferData
      * @return mixed
      * @throws Exception
+     * @since 2.0.0
      */
     public function transfer($transferData)
     {
-        $doAuthenticate = $this->authenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
-            if ($transferData->bank_id == 17): $mode_of_payment = 'CBL Account';
-            else: $mode_of_payment = 'Other Bank'; endif;
-            if ($transferData->recipient_type_name == 'Cash'): $mode_of_payment = 'Cash'; endif;
-            if ($transferData->recipient_type_name == 'Cash Pickup'): $mode_of_payment = 'Cash'; endif;
-            $xml_string = '
-                <Transaction xsi:type="urn:Transaction">
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
+        $payload = [];
+        $this->request
+            ->method(Config::METHOD_TRANSFER)
+            ->payload('Transaction', $payload);
+
+        if ($transferData->bank_id == 17): $mode_of_payment = 'CBL Account';
+        else: $mode_of_payment = 'Other Bank'; endif;
+        if ($transferData->recipient_type_name == 'Cash'): $mode_of_payment = 'Cash'; endif;
+        if ($transferData->recipient_type_name == 'Cash Pickup'): $mode_of_payment = 'Cash'; endif;
+        $xml_string = '<Transaction xsi:type="urn:Transaction">
                     <reference_no xsi:type="xsd:string">' . $transferData->reference_no . '</reference_no>
                     <remitter_name xsi:type="xsd:string">' . $transferData->sender_first_name . '</remitter_name>
                     <remitter_code xsi:type="xsd:string">' . $transferData->sender_mobile . '</remitter_code>
@@ -55,17 +133,16 @@ class CityBank
                     <issuing_country xsi:type="xsd:string">' . $transferData->sender_id_issue_country . '</issuing_country>
                     <beneficiary_name xsi:type="xsd:string">' . ((isset($transferData->receiver_first_name) ? $transferData->receiver_first_name : null) . (isset($transferData->receiver_middle_name) ? ' ' . $transferData->receiver_middle_name : null) . (isset($transferData->receiver_last_name) ? ' ' . $transferData->receiver_last_name : null)) . '</beneficiary_name>
             ';
-            if ($mode_of_payment != 'Cash'):
-                $xml_string .= '
+        if ($mode_of_payment != 'Cash'):
+            $xml_string .= '
                         <beneficiary_account_no xsi:type="xsd:string">' . $transferData->bank_account_number . '</beneficiary_account_no>
                         <beneficiary_bank_account_type xsi:type="xsd:string">Savings</beneficiary_bank_account_type>
                         <beneficiary_bank_name xsi:type="xsd:string">' . $transferData->bank_name . '</beneficiary_bank_name>
                         <beneficiary_bank_branch_name xsi:type="xsd:string">' . $transferData->bank_branch_name . '</beneficiary_bank_branch_name>
                         <branch_routing_number xsi:type="xsd:string">' . (isset($transferData->location_routing_id[1]->bank_branch_location_field_value) ? $transferData->location_routing_id[1]->bank_branch_location_field_value : null) . '</branch_routing_number>
                 ';
-            endif;
-            $xml_string .= '
-                    <amount_in_taka xsi:type="xsd:string">' . $transferData->transfer_amount . '</amount_in_taka>
+        endif;
+        $xml_string .= '<amount_in_taka xsi:type="xsd:string">' . $transferData->transfer_amount . '</amount_in_taka>
                     <purpose_of_payment xsi:type="xsd:string">' . $transferData->purpose_of_remittance . '</purpose_of_payment>
                     <beneficiary_mobile_phone_no xsi:type="xsd:string">' . $transferData->receiver_contact_number . '</beneficiary_mobile_phone_no>
                     <beneficiary_id_type xsi:type="xsd:string"></beneficiary_id_type>
@@ -99,15 +176,12 @@ class CityBank
                     <custom_field_name_10 xsi:type="xsd:string">?</custom_field_name_10>
                     <custom_field_value_10 xsi:type="xsd:string">?</custom_field_value_10>
                 </Transaction>';
-            $soapMethod = 'doTransfer';
-            $response = $this->connect($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->doTransferResponse->Response, true);
-            else:
-                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
+        $soapMethod = 'doTransfer';
+        $apiResponse = $this->connect($xml_string, $soapMethod);
+        if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+            $returnValue = json_decode($apiResponse->doTransferResponse->Response, true);
         else:
-            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
+            $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
         endif;
         return $returnValue;
     }
@@ -115,10 +189,10 @@ class CityBank
     /**
      * Get transaction status service will help you to get the transaction status
      *
-     * @param $inputs_data
-     * reference_no like system transaction number
+     * @param array  reference_no like system transaction number
      * @return mixed
      * @throws Exception
+     * @since 2.0.0
      */
     public function transactionStatus($inputs_data)
     {
@@ -132,9 +206,9 @@ class CityBank
                 </transaction_status>
             ';
             $soapMethod = 'getTnxStatus';
-            $response = $this->connect($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->getTnxStatusResponse->Response, true);
+            $apiResponse = $this->connect($xml_string, $soapMethod);
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+                $returnValue = json_decode($apiResponse->getTnxStatusResponse->Response, true);
             else:
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
             endif;
@@ -150,6 +224,7 @@ class CityBank
      * @param array reference_no like system transaction number, amend_query like cancel/amendment
      * @return mixed
      * @throws Exception
+     * @since 2.0.0
      */
     public function cancel($transferData)
     {
@@ -164,85 +239,9 @@ class CityBank
                 </txn_amend_cancel>
             ';
             $soapMethod = 'doAmendmentOrCancel';
-            $response = $this->connect($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->doAmendmentOrCancelResponse->Response, true);
-            else:
-                $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
-            $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
-        return $returnValue;
-    }
-
-    /**
-     * Get balance service will help to know the available balance
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function balance()
-    {
-        $payload = [
-            'get_balance' => []
-        ];
-
-        $response = $this->request
-            ->method(Config::METHOD_BALANCE)
-            ->payload($payload)
-            ->connect();
-
-        if ($response instanceof \SimpleXMLElement) {
-            $jsonResponse = json_decode($response->getBalanceResponse->Response, true);
-
-            dump($jsonResponse);
-        }
-        /*        $doAuthenticate = $this->authenticate();
-                if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
-                    $xml_string = '
-                        <get_balance xsi:type="urn:get_balance">
-                            <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                        </get_balance>
-                    ';
-                    $soapMethod = 'getBalance';
-                    $response = $this->connect($xml_string, $soapMethod);
-                    if (isset($response) && $response != false && $response != null):
-                        $returnValue = json_decode($response->getBalanceResponse->Response, true);
-                    else:
-                        $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-                    endif;
-                else:
-                    $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-                endif;
-                return $returnValue;*/
-    }
-
-    /**
-     * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
-     *
-     * @param $inputData
-     * receiver_first_name like receiver name
-     * bank_account_number like receiver bkash number or wallet number
-     * @return mixed
-     * @throws Exception
-     */
-    public function bkashCustomerValidation($inputData)
-    {
-        $doAuthenticate = $this->doAuthenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
-            $xml_string = '
-                <bkash_customer_validation xsi:type="urn:bkash_customer_validation">
-                    <!--You may enter the following 3 items in any order-->
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                    <fullName xsi:type="xsd:string">' . $inputData['receiver_first_name'] . '</fullName>
-                    <mobileNumber xsi:type="xsd:string">' . $inputData['bank_account_number'] . '</mobileNumber>
-                </bkash_customer_validation>
-            ';
-            $soapMethod = 'bkashCustomerValidation';
-            $response = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->bkashCustomerValidationResponse->Response, true);
+            $apiResponse = $this->connect($xml_string, $soapMethod);
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+                $returnValue = json_decode($apiResponse->doAmendmentOrCancelResponse->Response, true);
             else:
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
             endif;
@@ -259,6 +258,7 @@ class CityBank
      * bank_account_number like receiver bkash number or wallet number
      * @return mixed
      * @throws Exception
+     * @since 2.1.0
      */
     public function bkashValidation($inputData)
     {
@@ -272,9 +272,9 @@ class CityBank
                 </bkash_customer_details>
             ';
             $soapMethod = 'getBkashCustomerDetails';
-            $response = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->getBkashCustomerDetailsResponse->Response, true);
+            $apiResponse = $this->connectionCheck($xml_string, $soapMethod);
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+                $returnValue = json_decode($apiResponse->getBkashCustomerDetailsResponse->Response, true);
             else:
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
             endif;
@@ -287,9 +287,10 @@ class CityBank
     /**
      * Do bKash transfer service will help you to send a bkash transaction
      *
-     * @param $input_data
+     * @param array
      * @return mixed
      * @throws Exception
+     * @since 2.1.0
      */
     public function bkashTransfer($inputData)
     {
@@ -334,9 +335,9 @@ class CityBank
                 </do_bkash_transfer>
             ';
             $soapMethod = 'doBkashTransfer';
-            $response = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->doBkashTransferResponse->Response, true);
+            $apiResponse = $this->connectionCheck($xml_string, $soapMethod);
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+                $returnValue = json_decode($apiResponse->doBkashTransferResponse->Response, true);
             else:
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
             endif;
@@ -353,6 +354,7 @@ class CityBank
      * reference_no like system transaction number
      * @return mixed
      * @throws Exception
+     * @since 2.1.0
      */
     public function bkashTnxStatus($inputData)
     {
@@ -366,9 +368,9 @@ class CityBank
                 </bkash_transfer_status>
             ';
             $soapMethod = 'getBkashTransferStatus';
-            $response = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($response) && $response != false && $response != null):
-                $returnValue = json_decode($response->getBkashTransferStatusResponse->Response, true);
+            $apiResponse = $this->connectionCheck($xml_string, $soapMethod);
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+                $returnValue = json_decode($apiResponse->getBkashTransferStatusResponse->Response, true);
             else:
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
             endif;
@@ -377,6 +379,4 @@ class CityBank
         endif;
         return $returnValue;
     }
-
-
 }

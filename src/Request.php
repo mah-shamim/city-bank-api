@@ -5,6 +5,7 @@ namespace MahShamim\CityBank;
 
 
 use Exception;
+use JsonException;
 use SimpleXMLElement;
 
 class Request
@@ -17,7 +18,7 @@ class Request
     /**
      * @var string
      */
-    private $method = '';
+    private $methodWrapper;
 
     /**
      * @var array
@@ -27,11 +28,22 @@ class Request
     /**
      * @var string
      */
-    private $token = '';
+    public $token;
+
+    /**
+     * @var string
+     */
+    public $responseWrapper;
+
+    /**
+     * @var string
+     */
+    private $wrapper;
 
     /**
      * Request constructor.
      * @param Config $config
+     * @throws Exception
      */
     public function __construct($config)
     {
@@ -44,7 +56,9 @@ class Request
      */
     public function method($method)
     {
-        $this->method = $method;
+        $this->methodWrapper = $method;
+
+        $this->responseWrapper = "{$method}Response";
 
         return $this;
     }
@@ -54,43 +68,11 @@ class Request
      * @return $this
      * @throws Exception
      */
-    public function payload(array $data)
+    public function payload($wrapper, $data = [])
     {
-        if (is_array($data)) {
-            $this->payload = $data;
-        }
+        $this->payload = $data;
 
-        return $this;
-    }
-
-    /**
-     * Authenticate service will provide you the access token by providing following parameter value.
-     *
-     * @return self
-     * @throws Exception
-     */
-    public function token()
-    {
-        $payload = [
-            'auth_info' => [
-                'username' => $this->config->username,
-                'password' => $this->config->password,
-                'exchange_company' => $this->config->company,
-            ]
-        ];
-
-        $response = $this
-            ->method(Config::METHOD_AUTHENTICATE)
-            ->payload($payload)
-            ->connect();
-
-        if ($response instanceof \SimpleXMLElement) {
-            $jsonResponse = json_decode($response->doAuthenticateResponse->Response, true);
-
-            if ($jsonResponse['token'] != Config::AUTH_FAILED) {
-                $this->token = $jsonResponse['token'];
-            }
-        }
+        $this->wrapper = $wrapper;
 
         return $this;
     }
@@ -103,41 +85,26 @@ class Request
      */
     private function preparePayload()
     {
-        if (empty($this->method)) {
-            throw new Exception("Payload method is missing.");
-        }
+        $content = '';
 
-        dd($this->method);
-
-        if ($this->method != Config::METHOD_AUTHENTICATE && empty($this->token)) {
-            throw new Exception("Payload token is missing.");
-        }
-
-        $content = "";
-
-        foreach ($this->payload as $wrapper => $fields) {
-
-            $content .= "\t\t\t\t<{$wrapper} xsi:type=\"urn:{$wrapper}\">\n";
-
-            if ($this->method != Config::METHOD_AUTHENTICATE) {
-                $fields['token'] = $this->token;
+        if ($this->methodWrapper != Config::METHOD_AUTHENTICATE) {
+            if (is_null($this->token)) {
+                throw new Exception("Authenticate Token is missing");
             }
 
-            foreach ($fields as $title => $field) {
-
-                $type = gettype($field);
-
-                if ($type == 'NULL') {
-                    $type = "string";
-                }
-
-                $content .= ("\t\t\t\t\t<{$title} xsi:type=\"xsd:{$type}\">{$field}</{$title}>\n");
-            }
-
-            $content .= "\t\t\t\t</{$wrapper}>";
+            $this->payload['token'] = $this->token;
         }
 
-        return $this->wrapper($content);
+        foreach ($this->payload as $title => $field) {
+            $type = strtolower(gettype($field));
+            if ($type == 'null') {
+                $type = "string";
+            }
+
+            $content .= ("                            <{$title} xsi:type=\"xsd:{$type}\">{$field}</{$title}>\n");
+        }
+
+        return $this->wrapper(trim($content));
     }
 
     /**
@@ -145,29 +112,43 @@ class Request
      *
      * @param $content
      * @return string
+     * @throws Exception
      */
     private function wrapper($content)
     {
-        return trim('
-        <?xml version="1.0" encoding="utf-8"?>
+        if (empty($this->methodWrapper)) {
+            throw new Exception("Payload method is missing.");
+        }
+
+        return ('<?xml version="1.0" encoding="utf-8"?>
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:' . $this->method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        ' . $content . '
-                    </urn:' . $this->method . '>
+                    <urn:' . $this->methodWrapper . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        <' . $this->wrapper . ' xsi:type="urn:' . $this->wrapper . '">
+                            ' . $content . '
+                       </' . $this->wrapper . '>
+                    </urn:' . $this->methodWrapper . '>
                 </soapenv:Body>
-            </soapenv:Envelope>
-        ');
+            </soapenv:Envelope>');
     }
 
     /**
-     * @return false|SimpleXMLElement|string|null
+     * @return string
+     * @throws Exception
+     */
+    public function getXml()
+    {
+        return $this->preparePayload();
+    }
+
+    /**
+     * @return void
      * @throws Exception
      */
     public function connect()
     {
-        $formattedResponse = '';
+        $response = '';
 
         if (!function_exists('curl_version')) {
             throw new Exception('Curl extension is not enabled.', 500);
@@ -182,26 +163,17 @@ class Request
 
             $response = curl_exec($client);
 
-            dump($response);
-
-            /*if ($response === false) {
-                $this->handleException($client);
-            }*/
-
-            $formattedResponse = str_replace([
-                '<SOAP-ENV:Body>',
-                '</SOAP-ENV:Body>',
-                'xmlns:ns1="urn:dynamicapi"',
-                'ns1:'], '', $response);
+            if ($response === false) {
+                throw new \Exception("Curl response is empty");
+            }
 
         } catch (Exception $exception) {
             $this->handleException($client, $exception);
         } finally {
             curl_close($client);
-            $this->cleanup();
         }
 
-        return simplexml_load_string($formattedResponse);
+        return $this->formatResponse($response);
     }
 
     /**
@@ -212,12 +184,8 @@ class Request
     {
         $xmlString = $this->preparePayload();
 
-        $contentLength = strlen($xmlString);
-
-        $this->config->setHeaders(
-            "Content-length: {$contentLength}",
-            "SOAPAction: {$this->method}"
-        );
+        $this->config->setHeaders("Content-length", strlen($xmlString));
+        $this->config->setHeaders("SOAPAction", $this->methodWrapper);
 
         return [
             CURLOPT_SSL_VERIFYPEER => 0,
@@ -232,6 +200,42 @@ class Request
     }
 
     /**
+     * @param string $response
+     * @throws Exception
+     */
+    private function formatResponse($response = '')
+    {
+        $response = trim(str_replace([
+            '<SOAP-ENV:Body>',
+            '</SOAP-ENV:Body>',
+            'xmlns:ns1="urn:dynamicapi"',
+            'ns1:'], '', $response));
+
+        try {
+            $response = new SimpleXMLElement($response);
+
+            $response = ($response instanceof SimpleXMLElement)
+                ? json_decode(json_encode($response), true)
+                : '';
+
+            if (isset($response[$this->responseWrapper]['Response'])) {
+                $response = json_decode($response[$this->responseWrapper]['Response'], true);
+
+                if (json_last_error() != JSON_ERROR_NONE) {
+                    throw new JsonException(json_last_error_msg(), json_last_error());
+                }
+            }
+
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage());
+        } finally {
+            $this->cleanup();
+            return $response;
+        }
+    }
+
+
+    /**
      * @param $request
      * @param null $exception
      * @return void
@@ -241,15 +245,17 @@ class Request
     private function handleException($request, $exception)
     {
         if ($this->config->mode == Config::MODE_LIVE) {
-            logger("{$this->method} Request Error : " . curl_error($request));
+            logger("{$this->methodWrapper} Request Error : " . curl_error($request));
         } else {
-            throw new Exception("{$this->method} Exception : {$exception->getMessage()},  Curl Error: " . curl_error($request), curl_errno($request));
+            throw new Exception("{$this->methodWrapper} Exception : {$exception->getMessage()},  Curl Error: " . curl_error($request), curl_errno($request));
         }
     }
 
     private function cleanup()
     {
-        $this->payload = '';
-        $this->method = '';
+        $this->payload = [];
+        $this->methodWrapper = null;
+        $this->responseWrapper = null;
+        $this->wrapper = null;
     }
 }
