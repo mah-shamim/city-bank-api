@@ -15,6 +15,8 @@ use InvalidArgumentException;
  * @property string $base_url current base url
  * @property string $host current host base url
  * @property string $api_url api endpoint url starting with slash(/)
+ *
+ * @package MahShamim\CityBank\Config
  */
 class Config
 {
@@ -22,26 +24,16 @@ class Config
      * Constants
      */
     const MODE_LIVE = 'live';
-
     const MODE_SANDBOX = 'sandbox';
-
     const AUTH_FAILED = 'AUTH_FAILED';
-
-    const METHOD_AUTHENTICATE = 'doAuthenticate';
-
-    const METHOD_TRANSFER = 'doTransfer';
-
-    const METHOD_TRANSFER_STATUS = 'getTnxStatus';
-
-    const METHOD_AMENDMENT_OR_CANCEL = 'doAmendmentOrCancel';
-
-    const METHOD_BALANCE = 'getBalance';
-
-    const METHOD_BKASH_CUSTOMER_VALIDATION = 'bkashCustomerValidation';
-
-    const METHOD_DO_BKASH_TRANSFER = 'doBkashTransfer';
-
-    const METHOD_GET_BKASH_TRANSFER_STATUS = 'getBkashTransferStatus';
+    const AUTHENTICATE = 'doAuthenticate';
+    const TRANSFER = 'doTransfer';
+    const TRANSFER_STATUS = 'getTnxStatus';
+    const AMENDMENT_OR_CANCEL = 'doAmendmentOrCancel';
+    const BALANCE = 'getBalance';
+    const BKASH_CUSTOMER_VALIDATION = 'bkashCustomerValidation';
+    const BKASH_TRANSFER = 'doBkashTransfer';
+    const BKASH_TRANSFER_STATUS = 'getBkashTransferStatus';
 
     /**
      * Index array list of headers

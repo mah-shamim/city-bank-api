@@ -197,7 +197,7 @@ class Request
     {
         $content = '';
 
-        if ($this->methodWrapper != Config::METHOD_AUTHENTICATE) {
+        if ($this->methodWrapper != Config::AUTHENTICATE) {
             if (is_null($this->token)) {
                 throw new Exception('Authenticate Token is missing');
             }
