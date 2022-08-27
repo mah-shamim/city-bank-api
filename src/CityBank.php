@@ -167,8 +167,9 @@ class CityBank
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
      * @param $mobileNumber
-     * @param string $fullName
+     * @param  string  $fullName
      * @return self
+     *
      * @throws Exception
      *
      * @since 2.1.0
@@ -306,7 +307,9 @@ class CityBank
      *
      * @param $transferData
      * @return self
+     *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function transfer($transferData)
@@ -316,40 +319,47 @@ class CityBank
             ->method(Config::TRANSFER)
             ->payload('Transaction', $payload);
 
-        if ($transferData->bank_id == 17): $mode_of_payment = 'CBL Account';
-        else: $mode_of_payment = 'Other Bank'; endif;
-        if ($transferData->recipient_type_name == 'Cash'): $mode_of_payment = 'Cash'; endif;
-        if ($transferData->recipient_type_name == 'Cash Pickup'): $mode_of_payment = 'Cash'; endif;
+        if ($transferData->bank_id == 17) {
+            $mode_of_payment = 'CBL Account';
+        } else {
+            $mode_of_payment = 'Other Bank';
+        }
+        if ($transferData->recipient_type_name == 'Cash') {
+            $mode_of_payment = 'Cash';
+        }
+        if ($transferData->recipient_type_name == 'Cash Pickup') {
+            $mode_of_payment = 'Cash';
+        }
         $xml_string = '<Transaction xsi:type="urn:Transaction">
-                    <reference_no xsi:type="xsd:string">' . $transferData->reference_no . '</reference_no>
-                    <remitter_name xsi:type="xsd:string">' . $transferData->sender_first_name . '</remitter_name>
-                    <remitter_code xsi:type="xsd:string">' . $transferData->sender_mobile . '</remitter_code>
+                    <reference_no xsi:type="xsd:string">'.$transferData->reference_no.'</reference_no>
+                    <remitter_name xsi:type="xsd:string">'.$transferData->sender_first_name.'</remitter_name>
+                    <remitter_code xsi:type="xsd:string">'.$transferData->sender_mobile.'</remitter_code>
                     <remitter_iqama_no xsi:type="xsd:string"></remitter_iqama_no>
-                    <remitter_id_passport_no xsi:type="xsd:string">' . $transferData->sender_id_number . '</remitter_id_passport_no>
-                    <issuing_country xsi:type="xsd:string">' . $transferData->sender_id_issue_country . '</issuing_country>
-                    <beneficiary_name xsi:type="xsd:string">' . ((isset($transferData->receiver_first_name) ? $transferData->receiver_first_name : null) . (isset($transferData->receiver_middle_name) ? ' ' . $transferData->receiver_middle_name : null) . (isset($transferData->receiver_last_name) ? ' ' . $transferData->receiver_last_name : null)) . '</beneficiary_name>
+                    <remitter_id_passport_no xsi:type="xsd:string">'.$transferData->sender_id_number.'</remitter_id_passport_no>
+                    <issuing_country xsi:type="xsd:string">'.$transferData->sender_id_issue_country.'</issuing_country>
+                    <beneficiary_name xsi:type="xsd:string">'.((isset($transferData->receiver_first_name) ? $transferData->receiver_first_name : null).(isset($transferData->receiver_middle_name) ? ' '.$transferData->receiver_middle_name : null).(isset($transferData->receiver_last_name) ? ' '.$transferData->receiver_last_name : null)).'</beneficiary_name>
             ';
-        if ($mode_of_payment != 'Cash'):
+        if ($mode_of_payment != 'Cash') {
             $xml_string .= '
-                        <beneficiary_account_no xsi:type="xsd:string">' . $transferData->bank_account_number . '</beneficiary_account_no>
+                        <beneficiary_account_no xsi:type="xsd:string">'.$transferData->bank_account_number.'</beneficiary_account_no>
                         <beneficiary_bank_account_type xsi:type="xsd:string">Savings</beneficiary_bank_account_type>
-                        <beneficiary_bank_name xsi:type="xsd:string">' . $transferData->bank_name . '</beneficiary_bank_name>
-                        <beneficiary_bank_branch_name xsi:type="xsd:string">' . $transferData->bank_branch_name . '</beneficiary_bank_branch_name>
-                        <branch_routing_number xsi:type="xsd:string">' . (isset($transferData->location_routing_id[1]->bank_branch_location_field_value) ? $transferData->location_routing_id[1]->bank_branch_location_field_value : null) . '</branch_routing_number>
+                        <beneficiary_bank_name xsi:type="xsd:string">'.$transferData->bank_name.'</beneficiary_bank_name>
+                        <beneficiary_bank_branch_name xsi:type="xsd:string">'.$transferData->bank_branch_name.'</beneficiary_bank_branch_name>
+                        <branch_routing_number xsi:type="xsd:string">'.(isset($transferData->location_routing_id[1]->bank_branch_location_field_value) ? $transferData->location_routing_id[1]->bank_branch_location_field_value : null).'</branch_routing_number>
                 ';
-        endif;
-        $xml_string .= '<amount_in_taka xsi:type="xsd:string">' . $transferData->transfer_amount . '</amount_in_taka>
-                    <purpose_of_payment xsi:type="xsd:string">' . $transferData->purpose_of_remittance . '</purpose_of_payment>
-                    <beneficiary_mobile_phone_no xsi:type="xsd:string">' . $transferData->receiver_contact_number . '</beneficiary_mobile_phone_no>
+        }
+        $xml_string .= '<amount_in_taka xsi:type="xsd:string">'.$transferData->transfer_amount.'</amount_in_taka>
+                    <purpose_of_payment xsi:type="xsd:string">'.$transferData->purpose_of_remittance.'</purpose_of_payment>
+                    <beneficiary_mobile_phone_no xsi:type="xsd:string">'.$transferData->receiver_contact_number.'</beneficiary_mobile_phone_no>
                     <beneficiary_id_type xsi:type="xsd:string"></beneficiary_id_type>
                     <pin_no xsi:type="xsd:string"></pin_no>
-                    <remitter_address xsi:type="xsd:string">' . $transferData->sender_address . '</remitter_address>
-                    <remitter_mobile_no xsi:type="xsd:string">' . $transferData->sender_mobile . '</remitter_mobile_no>
-                    <beneficiary_address xsi:type="xsd:string">' . $transferData->receiver_address . '</beneficiary_address>
+                    <remitter_address xsi:type="xsd:string">'.$transferData->sender_address.'</remitter_address>
+                    <remitter_mobile_no xsi:type="xsd:string">'.$transferData->sender_mobile.'</remitter_mobile_no>
+                    <beneficiary_address xsi:type="xsd:string">'.$transferData->receiver_address.'</beneficiary_address>
                     <beneficiary_id_no xsi:type="xsd:string"></beneficiary_id_no>
                     <special_instruction xsi:type="xsd:string">NA</special_instruction>
-                    <mode_of_payment xsi:type="xsd:string">' . $mode_of_payment . '</mode_of_payment>
-                    <issue_date xsi:type="xsd:string">' . date('Y-m-d', strtotime($transferData->created_date)) . '</issue_date>
+                    <mode_of_payment xsi:type="xsd:string">'.$mode_of_payment.'</mode_of_payment>
+                    <issue_date xsi:type="xsd:string">'.date('Y-m-d', strtotime($transferData->created_date)).'</issue_date>
                     <!--Optional:-->
                     <custom_field_name_1 xsi:type="xsd:string">?</custom_field_name_1>
                     <custom_field_value_1 xsi:type="xsd:string">?</custom_field_value_1>
@@ -374,11 +384,12 @@ class CityBank
                 </Transaction>';
         $soapMethod = 'doTransfer';
         $apiResponse = $this->connect($xml_string, $soapMethod);
-        if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+        if (isset($apiResponse) && $apiResponse != false && $apiResponse != null) {
             $returnValue = json_decode($apiResponse->doTransferResponse->Response, true);
-        else:
+        } else {
             $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-        endif;
+        }
+
         return $returnValue;
     }
 }
