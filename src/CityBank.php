@@ -315,11 +315,42 @@ class CityBank
     public function transfer($transferData)
     {
         $payload = [];
+        $payload['reference_no'] = isset($data['reference_no']) ? $data['reference_no'] : '';
+        $payload['remitter_name'] = isset($data['remitter_name']) ? $data['remitter_name'] : '';
+        $payload['remitter_code'] = isset($data['remitter_code']) ? $data['remitter_code'] : '';
+        $payload['remitter_iqama_no'] = isset($data['remitter_iqama_no']) ? $data['remitter_iqama_no'] : '';
+        $payload['remitter_id_passport_no'] = isset($data['remitter_id_passport_no']) ? $data['remitter_id_passport_no'] : '';
+        $payload['issuing_country'] = isset($data['issuing_country']) ? $data['issuing_country'] : '';
+        $payload['beneficiary_name'] = isset($data['beneficiary_name']) ? $data['beneficiary_name'] : '';
+        if (in_array($payload['mode_of_payment'], array('CBL Account', 'Other Bank'))) {
+            $payload['beneficiary_account_no'] = isset($data['beneficiary_account_no']) ? $data['beneficiary_account_no'] : '';
+            $payload['beneficiary_bank_account_type'] = isset($data['beneficiary_bank_account_type']) ? $data['beneficiary_bank_account_type'] : '';
+            $payload['beneficiary_bank_name'] = isset($data['beneficiary_bank_name']) ? $data['beneficiary_bank_name'] : '';
+            $payload['beneficiary_bank_branch_name'] = isset($data['beneficiary_bank_branch_name']) ? $data['beneficiary_bank_branch_name'] : '';
+            $payload['branch_routing_number'] = isset($data['branch_routing_number']) ? $data['branch_routing_number'] : '';
+        }
+        $payload['amount_in_bdt'] = isset($data['amount_in_bdt']) ? $data['amount_in_bdt'] : '';
+        $payload['purpose_of_payment'] = isset($data['purpose_of_payment']) ? $data['purpose_of_payment'] : '';
+        $payload['beneficiary_mobile_phone_no'] = isset($data['beneficiary_mobile_phone_no']) ? $data['beneficiary_mobile_phone_no'] : '?';
+        $payload['beneficiary_id_type'] = isset($data['beneficiary_id_type']) ? $data['beneficiary_id_type'] : '';
+        $payload['pin_no'] = isset($data['pin_no']) ? $data['pin_no'] : '';
+        $payload['remitter_address'] = isset($data['remitter_address']) ? $data['remitter_address'] : '';
+        $payload['remitter_mobile_no'] = isset($data['remitter_mobile_no']) ? $data['remitter_mobile_no'] : '';
+        $payload['beneficiary_address'] = isset($data['beneficiary_address']) ? $data['beneficiary_address'] : '';
+        $payload['beneficiary_id_no'] = isset($data['beneficiary_id_no']) ? $data['beneficiary_id_no'] : '';
+        $payload['special_instruction'] = isset($data['special_instruction']) ? $data['special_instruction'] : 'NA';
+        $payload['mode_of_payment'] = isset($data['mode_of_payment']) ? $data['mode_of_payment'] : '';
+        $payload['issue_date'] = isset($data['issue_date']) ? $data['issue_date'] : '';
+        for($i = 1; $i <= 10; $i++){
+            $payload['custom_field_name_'.$i] = isset($data['custom_field_name_'.$i]) ? $data['custom_field_name_'.$i] : '?';
+            $payload['custom_field_value_'.$i] = isset($data['custom_field_value_'.$i]) ? $data['custom_field_value_'.$i] : '?';
+        }
         $this->request
             ->method(Config::TRANSFER)
             ->payload('Transaction', $payload);
 
-        if ($transferData->bank_id == 17) {
+        return $this;
+        /*if ($transferData->bank_id == 17) {
             $mode_of_payment = 'CBL Account';
         } else {
             $mode_of_payment = 'Other Bank';
@@ -390,6 +421,6 @@ class CityBank
             $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
         }
 
-        return $returnValue;
+        return $returnValue;*/
     }
 }
