@@ -19,7 +19,8 @@ class CityBank
     /**
      * CityBank constructor.
      *
-     * @param array $config
+     * @param  array  $config
+     *
      * @throws Exception
      */
     public function __construct($config = [])
@@ -33,6 +34,7 @@ class CityBank
 
     /**
      * @return string
+     *
      * @throws Exception
      */
     public function token()
@@ -58,7 +60,9 @@ class CityBank
 
     /**
      * Execute the Request api
+     *
      * @return array
+     *
      * @throws Exception
      */
     public function execute()
@@ -70,7 +74,9 @@ class CityBank
      * Authenticate service will provide you the access token by providing following parameter value.
      *
      * @return void
+     *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function doAuthenticate()
@@ -78,7 +84,7 @@ class CityBank
         $payload = [
             'username' => $this->config->username,
             'password' => $this->config->password,
-            'exchange_company' => $this->config->company
+            'exchange_company' => $this->config->company,
         ];
 
         $response = $this->request
@@ -95,7 +101,9 @@ class CityBank
      * Get balance service will help to know the available balance
      *
      * @return self
+     *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function getBalance()
@@ -114,7 +122,9 @@ class CityBank
      *
      * @param $transferData
      * @return self
+     *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function transfer($transferData)
@@ -124,40 +134,47 @@ class CityBank
             ->method(Config::METHOD_TRANSFER)
             ->payload('Transaction', $payload);
 
-        if ($transferData->bank_id == 17): $mode_of_payment = 'CBL Account';
-        else: $mode_of_payment = 'Other Bank'; endif;
-        if ($transferData->recipient_type_name == 'Cash'): $mode_of_payment = 'Cash'; endif;
-        if ($transferData->recipient_type_name == 'Cash Pickup'): $mode_of_payment = 'Cash'; endif;
+        if ($transferData->bank_id == 17) {
+            $mode_of_payment = 'CBL Account';
+        } else {
+            $mode_of_payment = 'Other Bank';
+        }
+        if ($transferData->recipient_type_name == 'Cash') {
+            $mode_of_payment = 'Cash';
+        }
+        if ($transferData->recipient_type_name == 'Cash Pickup') {
+            $mode_of_payment = 'Cash';
+        }
         $xml_string = '<Transaction xsi:type="urn:Transaction">
-                    <reference_no xsi:type="xsd:string">' . $transferData->reference_no . '</reference_no>
-                    <remitter_name xsi:type="xsd:string">' . $transferData->sender_first_name . '</remitter_name>
-                    <remitter_code xsi:type="xsd:string">' . $transferData->sender_mobile . '</remitter_code>
+                    <reference_no xsi:type="xsd:string">'.$transferData->reference_no.'</reference_no>
+                    <remitter_name xsi:type="xsd:string">'.$transferData->sender_first_name.'</remitter_name>
+                    <remitter_code xsi:type="xsd:string">'.$transferData->sender_mobile.'</remitter_code>
                     <remitter_iqama_no xsi:type="xsd:string"></remitter_iqama_no>
-                    <remitter_id_passport_no xsi:type="xsd:string">' . $transferData->sender_id_number . '</remitter_id_passport_no>
-                    <issuing_country xsi:type="xsd:string">' . $transferData->sender_id_issue_country . '</issuing_country>
-                    <beneficiary_name xsi:type="xsd:string">' . ((isset($transferData->receiver_first_name) ? $transferData->receiver_first_name : null) . (isset($transferData->receiver_middle_name) ? ' ' . $transferData->receiver_middle_name : null) . (isset($transferData->receiver_last_name) ? ' ' . $transferData->receiver_last_name : null)) . '</beneficiary_name>
+                    <remitter_id_passport_no xsi:type="xsd:string">'.$transferData->sender_id_number.'</remitter_id_passport_no>
+                    <issuing_country xsi:type="xsd:string">'.$transferData->sender_id_issue_country.'</issuing_country>
+                    <beneficiary_name xsi:type="xsd:string">'.((isset($transferData->receiver_first_name) ? $transferData->receiver_first_name : null).(isset($transferData->receiver_middle_name) ? ' '.$transferData->receiver_middle_name : null).(isset($transferData->receiver_last_name) ? ' '.$transferData->receiver_last_name : null)).'</beneficiary_name>
             ';
-        if ($mode_of_payment != 'Cash'):
+        if ($mode_of_payment != 'Cash') {
             $xml_string .= '
-                        <beneficiary_account_no xsi:type="xsd:string">' . $transferData->bank_account_number . '</beneficiary_account_no>
+                        <beneficiary_account_no xsi:type="xsd:string">'.$transferData->bank_account_number.'</beneficiary_account_no>
                         <beneficiary_bank_account_type xsi:type="xsd:string">Savings</beneficiary_bank_account_type>
-                        <beneficiary_bank_name xsi:type="xsd:string">' . $transferData->bank_name . '</beneficiary_bank_name>
-                        <beneficiary_bank_branch_name xsi:type="xsd:string">' . $transferData->bank_branch_name . '</beneficiary_bank_branch_name>
-                        <branch_routing_number xsi:type="xsd:string">' . (isset($transferData->location_routing_id[1]->bank_branch_location_field_value) ? $transferData->location_routing_id[1]->bank_branch_location_field_value : null) . '</branch_routing_number>
+                        <beneficiary_bank_name xsi:type="xsd:string">'.$transferData->bank_name.'</beneficiary_bank_name>
+                        <beneficiary_bank_branch_name xsi:type="xsd:string">'.$transferData->bank_branch_name.'</beneficiary_bank_branch_name>
+                        <branch_routing_number xsi:type="xsd:string">'.(isset($transferData->location_routing_id[1]->bank_branch_location_field_value) ? $transferData->location_routing_id[1]->bank_branch_location_field_value : null).'</branch_routing_number>
                 ';
-        endif;
-        $xml_string .= '<amount_in_taka xsi:type="xsd:string">' . $transferData->transfer_amount . '</amount_in_taka>
-                    <purpose_of_payment xsi:type="xsd:string">' . $transferData->purpose_of_remittance . '</purpose_of_payment>
-                    <beneficiary_mobile_phone_no xsi:type="xsd:string">' . $transferData->receiver_contact_number . '</beneficiary_mobile_phone_no>
+        }
+        $xml_string .= '<amount_in_taka xsi:type="xsd:string">'.$transferData->transfer_amount.'</amount_in_taka>
+                    <purpose_of_payment xsi:type="xsd:string">'.$transferData->purpose_of_remittance.'</purpose_of_payment>
+                    <beneficiary_mobile_phone_no xsi:type="xsd:string">'.$transferData->receiver_contact_number.'</beneficiary_mobile_phone_no>
                     <beneficiary_id_type xsi:type="xsd:string"></beneficiary_id_type>
                     <pin_no xsi:type="xsd:string"></pin_no>
-                    <remitter_address xsi:type="xsd:string">' . $transferData->sender_address . '</remitter_address>
-                    <remitter_mobile_no xsi:type="xsd:string">' . $transferData->sender_mobile . '</remitter_mobile_no>
-                    <beneficiary_address xsi:type="xsd:string">' . $transferData->receiver_address . '</beneficiary_address>
+                    <remitter_address xsi:type="xsd:string">'.$transferData->sender_address.'</remitter_address>
+                    <remitter_mobile_no xsi:type="xsd:string">'.$transferData->sender_mobile.'</remitter_mobile_no>
+                    <beneficiary_address xsi:type="xsd:string">'.$transferData->receiver_address.'</beneficiary_address>
                     <beneficiary_id_no xsi:type="xsd:string"></beneficiary_id_no>
                     <special_instruction xsi:type="xsd:string">NA</special_instruction>
-                    <mode_of_payment xsi:type="xsd:string">' . $mode_of_payment . '</mode_of_payment>
-                    <issue_date xsi:type="xsd:string">' . date('Y-m-d', strtotime($transferData->created_date)) . '</issue_date>
+                    <mode_of_payment xsi:type="xsd:string">'.$mode_of_payment.'</mode_of_payment>
+                    <issue_date xsi:type="xsd:string">'.date('Y-m-d', strtotime($transferData->created_date)).'</issue_date>
                     <!--Optional:-->
                     <custom_field_name_1 xsi:type="xsd:string">?</custom_field_name_1>
                     <custom_field_value_1 xsi:type="xsd:string">?</custom_field_value_1>
@@ -182,20 +199,23 @@ class CityBank
                 </Transaction>';
         $soapMethod = 'doTransfer';
         $apiResponse = $this->connect($xml_string, $soapMethod);
-        if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+        if (isset($apiResponse) && $apiResponse != false && $apiResponse != null) {
             $returnValue = json_decode($apiResponse->doTransferResponse->Response, true);
-        else:
+        } else {
             $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-        endif;
+        }
+
         return $returnValue;
     }
 
     /**
      * Get transaction status service will help you to get the transaction status
      *
-     * @param string $reference
+     * @param  string  $reference
      * @return self
+     *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function getTnxStatus($reference)
@@ -215,14 +235,16 @@ class CityBank
      * @param string
      * @param string
      * @return self
+     *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function doAmendmentOrCancel($reference, $details = '?')
     {
         $payload = [
             'reference_no' => $reference,
-            'amend_query' => $details
+            'amend_query' => $details,
         ];
 
         $this->request
@@ -238,30 +260,33 @@ class CityBank
      * @param $inputData
      * bank_account_number like receiver bkash number or wallet number
      * @return mixed
+     *
      * @throws Exception
+     *
      * @since 2.1.0
      */
     public function bkashValidation($inputData)
     {
         $doAuthenticate = $this->doAuthenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null) {
             $xml_string = '
                 <bkash_customer_details xsi:type="urn:bkash_customer_validation">
                     <!--You may enter the following 3 items in any order-->
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                    <mobileNumber xsi:type="xsd:string">' . $inputData['bank_account_number'] . '</mobileNumber>
+                    <token xsi:type="xsd:string">'.$doAuthenticate.'</token>
+                    <mobileNumber xsi:type="xsd:string">'.$inputData['bank_account_number'].'</mobileNumber>
                 </bkash_customer_details>
             ';
             $soapMethod = 'getBkashCustomerDetails';
             $apiResponse = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null) {
                 $returnValue = json_decode($apiResponse->getBkashCustomerDetailsResponse->Response, true);
-            else:
+            } else {
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
+            }
+        } else {
             $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
+        }
+
         return $returnValue;
     }
 
@@ -270,61 +295,64 @@ class CityBank
      *
      * @param array
      * @return mixed
+     *
      * @throws Exception
+     *
      * @since 2.1.0
      */
     public function bkashTransfer($inputData)
     {
         $doAuthenticate = $this->doAuthenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null) {
             $xml_string = '
                 <do_bkash_transfer xsi:type="urn:do_bkash_transfer">
                     <!--You may enter the following 18 items in any order-->
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                    <amount_in_bdt xsi:type="xsd:string">' . $inputData->transfer_amount . '</amount_in_bdt>
-                    <reference_no xsi:type="xsd:string">' . $inputData->reference_no . '</reference_no>
-                    <remitter_name xsi:type="xsd:string">' . $inputData->sender_first_name . '</remitter_name>
-                    <remitter_dob xsi:type="xsd:string">' . $inputData->sender_date_of_birth . '</remitter_dob>
+                    <token xsi:type="xsd:string">'.$doAuthenticate.'</token>
+                    <amount_in_bdt xsi:type="xsd:string">'.$inputData->transfer_amount.'</amount_in_bdt>
+                    <reference_no xsi:type="xsd:string">'.$inputData->reference_no.'</reference_no>
+                    <remitter_name xsi:type="xsd:string">'.$inputData->sender_first_name.'</remitter_name>
+                    <remitter_dob xsi:type="xsd:string">'.$inputData->sender_date_of_birth.'</remitter_dob>
                     <!--Optional:-->
                     <remitter_iqama_no xsi:type="xsd:string"/>
-                    <remitter_id_passport_no xsi:type="xsd:string">' . $inputData->sender_id_number . '</remitter_id_passport_no>
+                    <remitter_id_passport_no xsi:type="xsd:string">'.$inputData->sender_id_number.'</remitter_id_passport_no>
                     <!--Optional:-->
-                    <remitter_address xsi:type="xsd:string">' . $inputData->sender_address . '</remitter_address>
-                    <remitter_mobile_no xsi:type="xsd:string">' . $inputData->sender_mobile . '</remitter_mobile_no>
-                    <issuing_country xsi:type="xsd:string">' . $inputData->sender_id_issue_country . '</issuing_country>
+                    <remitter_address xsi:type="xsd:string">'.$inputData->sender_address.'</remitter_address>
+                    <remitter_mobile_no xsi:type="xsd:string">'.$inputData->sender_mobile.'</remitter_mobile_no>
+                    <issuing_country xsi:type="xsd:string">'.$inputData->sender_id_issue_country.'</issuing_country>
             ';
-            if (isset($inputData->wallet_account_actual_name) && $inputData->wallet_account_actual_name != ''):
+            if (isset($inputData->wallet_account_actual_name) && $inputData->wallet_account_actual_name != '') {
                 $xml_string .= '
-                    <beneficiary_name xsi:type="xsd:string">' . (isset($inputData->wallet_account_actual_name) ? $inputData->wallet_account_actual_name : null) . '</beneficiary_name>
+                    <beneficiary_name xsi:type="xsd:string">'.(isset($inputData->wallet_account_actual_name) ? $inputData->wallet_account_actual_name : null).'</beneficiary_name>
             ';
-            else:
+            } else {
                 $xml_string .= '
-                    <beneficiary_name xsi:type="xsd:string">' . ((isset($inputData->receiver_first_name) ? $inputData->receiver_first_name : null) . (isset($inputData->receiver_middle_name) ? ' ' . $inputData->receiver_middle_name : null) . (isset($inputData->receiver_last_name) ? ' ' . $inputData->receiver_last_name : null)) . '</beneficiary_name>
+                    <beneficiary_name xsi:type="xsd:string">'.((isset($inputData->receiver_first_name) ? $inputData->receiver_first_name : null).(isset($inputData->receiver_middle_name) ? ' '.$inputData->receiver_middle_name : null).(isset($inputData->receiver_last_name) ? ' '.$inputData->receiver_last_name : null)).'</beneficiary_name>
             ';
-            endif;
+            }
             $xml_string .= '
-                    <beneficiary_city xsi:type="xsd:string">' . (isset($inputData->receiver_city) ? $inputData->receiver_city : 'Dhaka') . '</beneficiary_city>
+                    <beneficiary_city xsi:type="xsd:string">'.(isset($inputData->receiver_city) ? $inputData->receiver_city : 'Dhaka').'</beneficiary_city>
                     <!--Optional:-->
                     <beneficiary_id_no xsi:type="xsd:string"></beneficiary_id_no>
                     <!--Optional:-->
                     <beneficiary_id_type xsi:type="xsd:string"></beneficiary_id_type>
-                    <purpose_of_payment xsi:type="xsd:string">' . $inputData->purpose_of_remittance . '</purpose_of_payment>
-                    <beneficiary_mobile_phone_no xsi:type="xsd:string">' . $inputData->bank_account_number . '</beneficiary_mobile_phone_no>
+                    <purpose_of_payment xsi:type="xsd:string">'.$inputData->purpose_of_remittance.'</purpose_of_payment>
+                    <beneficiary_mobile_phone_no xsi:type="xsd:string">'.$inputData->bank_account_number.'</beneficiary_mobile_phone_no>
                     <!--Optional:-->
-                    <beneficiary_address xsi:type="xsd:string">' . $inputData->receiver_address . '</beneficiary_address>
-                    <issue_date xsi:type="xsd:string">' . date('Y-m-d', strtotime($inputData->created_date)) . '</issue_date>
+                    <beneficiary_address xsi:type="xsd:string">'.$inputData->receiver_address.'</beneficiary_address>
+                    <issue_date xsi:type="xsd:string">'.date('Y-m-d', strtotime($inputData->created_date)).'</issue_date>
                 </do_bkash_transfer>
             ';
             $soapMethod = 'doBkashTransfer';
             $apiResponse = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null) {
                 $returnValue = json_decode($apiResponse->doBkashTransferResponse->Response, true);
-            else:
+            } else {
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
+            }
+        } else {
             $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
+        }
+
         return $returnValue;
     }
 
@@ -334,30 +362,33 @@ class CityBank
      * @param $inputData
      * reference_no like system transaction number
      * @return mixed
+     *
      * @throws Exception
+     *
      * @since 2.1.0
      */
     public function bkashTnxStatus($inputData)
     {
         $doAuthenticate = $this->doAuthenticate();
-        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null):
+        if ($doAuthenticate != 'AUTH_FAILED' || $doAuthenticate != null) {
             $xml_string = '
                 <bkash_transfer_status xsi:type="urn:bkash_transfer_status">
                     <!--You may enter the following 2 items in any order-->
-                    <token xsi:type="xsd:string">' . $doAuthenticate . '</token>
-                    <reference_no xsi:type="xsd:string">' . $inputData['reference_no'] . '</reference_no>
+                    <token xsi:type="xsd:string">'.$doAuthenticate.'</token>
+                    <reference_no xsi:type="xsd:string">'.$inputData['reference_no'].'</reference_no>
                 </bkash_transfer_status>
             ';
             $soapMethod = 'getBkashTransferStatus';
             $apiResponse = $this->connectionCheck($xml_string, $soapMethod);
-            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null):
+            if (isset($apiResponse) && $apiResponse != false && $apiResponse != null) {
                 $returnValue = json_decode($apiResponse->getBkashTransferStatusResponse->Response, true);
-            else:
+            } else {
                 $returnValue = ['message' => 'Transaction response Found', 'status' => 5000];
-            endif;
-        else:
+            }
+        } else {
             $returnValue = ['message' => 'AUTH_FAILED INVALID USER INFORMATION', 'status' => 103];
-        endif;
+        }
+
         return $returnValue;
     }
 }

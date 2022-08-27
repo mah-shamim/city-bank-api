@@ -40,7 +40,9 @@ class Request
 
     /**
      * Request constructor.
-     * @param Config $config
+     *
+     * @param  Config  $config
+     *
      * @throws Exception
      */
     public function __construct($config)
@@ -49,7 +51,7 @@ class Request
     }
 
     /**
-     * @param string $method
+     * @param  string  $method
      * @return $this
      */
     public function method($method)
@@ -62,8 +64,9 @@ class Request
     }
 
     /**
-     * @param array $data
+     * @param  array  $data
      * @return $this
+     *
      * @throws Exception
      */
     public function payload($wrapper, $data = [])
@@ -77,6 +80,7 @@ class Request
 
     /**
      * @return string
+     *
      * @throws Exception
      */
     public function getXml()
@@ -86,13 +90,14 @@ class Request
 
     /**
      * @return mixed|string
+     *
      * @throws Exception
      */
     public function connect()
     {
         $response = '';
 
-        if (!function_exists('curl_version')) {
+        if (! function_exists('curl_version')) {
             throw new Exception('Curl extension is not enabled.', 500);
         }
 
@@ -106,28 +111,30 @@ class Request
             $response = curl_exec($client);
 
             if (strlen($response) == 0 && $response == false) {
-                throw new Exception("Curl response is empty");
+                throw new Exception('Curl response is empty');
             }
         } catch (Exception $exception) {
             $this->handleException($client, $exception);
         }
 
-        logger("API Response" . $response);
+        logger('API Response'.$response);
 
         curl_close($client);
+
         return $this->formatResponse($response);
     }
 
     /**
      * @return array
+     *
      * @throws Exception
      */
     private function curlOptions()
     {
         $xmlString = $this->preparePayload();
 
-        $this->config->setHeaders("Content-length", strlen($xmlString));
-        $this->config->setHeaders("SOAPAction", $this->methodWrapper);
+        $this->config->setHeaders('Content-length', strlen($xmlString));
+        $this->config->setHeaders('SOAPAction', $this->methodWrapper);
 
         return [
             CURLOPT_SSL_VERIFYPEER => 0,
@@ -142,18 +149,19 @@ class Request
     }
 
     /**
-     * @param string $response
+     * @param  string  $response
+     *
      * @throws Exception
      */
     private function formatResponse($response = '')
     {
-        \Log::info("$this->methodWrapper \n " . $response);
+        \Log::info("$this->methodWrapper \n ".$response);
 
         $response = trim(str_replace([
             '<SOAP-ENV:Body>',
             '</SOAP-ENV:Body>',
             'xmlns:ns1="urn:dynamicapi"',
-            'ns1:'], '', $response));
+            'ns1:', ], '', $response));
 
         try {
             $response = new SimpleXMLElement($response);
@@ -169,11 +177,11 @@ class Request
                     throw new JsonException(json_last_error_msg(), json_last_error());
                 }
             }
-
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
         } finally {
             $this->cleanup();
+
             return $response;
         }
     }
@@ -182,6 +190,7 @@ class Request
      * Render the payload array to a xml response string
      *
      * @return string
+     *
      * @throws Exception
      */
     private function preparePayload()
@@ -190,7 +199,7 @@ class Request
 
         if ($this->methodWrapper != Config::METHOD_AUTHENTICATE) {
             if (is_null($this->token)) {
-                throw new Exception("Authenticate Token is missing");
+                throw new Exception('Authenticate Token is missing');
             }
 
             $this->payload['token'] = $this->token;
@@ -199,7 +208,7 @@ class Request
         foreach ($this->payload as $title => $field) {
             $type = strtolower(gettype($field));
             if ($type == 'null') {
-                $type = "string";
+                $type = 'string';
             }
 
             $content .= ("                            <$title xsi:type=\"xsd:$type\">$field</$title>\n");
@@ -213,30 +222,31 @@ class Request
      *
      * @param $content
      * @return string
+     *
      * @throws Exception
      */
     private function wrapper($content)
     {
         if (empty($this->methodWrapper)) {
-            throw new Exception("Payload method is missing.");
+            throw new Exception('Payload method is missing.');
         }
 
-        return ('<?xml version="1.0" encoding="utf-8"?>
+        return '<?xml version="1.0" encoding="utf-8"?>
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:' . $this->methodWrapper . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        <' . $this->wrapper . ' xsi:type="urn:' . $this->wrapper . '">
-                            ' . $content . '
-                       </' . $this->wrapper . '>
-                    </urn:' . $this->methodWrapper . '>
+                    <urn:'.$this->methodWrapper.' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        <'.$this->wrapper.' xsi:type="urn:'.$this->wrapper.'">
+                            '.$content.'
+                       </'.$this->wrapper.'>
+                    </urn:'.$this->methodWrapper.'>
                 </soapenv:Body>
-            </soapenv:Envelope>');
+            </soapenv:Envelope>';
     }
 
     /**
      * @param $request
-     * @param null $exception
+     * @param  null  $exception
      * @return void
      *
      * @throws Exception
@@ -244,9 +254,9 @@ class Request
     private function handleException($request, $exception)
     {
         if ($this->config->mode == Config::MODE_LIVE) {
-            logger("$this->methodWrapper Request Error : " . curl_error($request));
+            logger("$this->methodWrapper Request Error : ".curl_error($request));
         } else {
-            throw new Exception("$this->methodWrapper Exception : {$exception->getMessage()},  Curl Error: " . curl_error($request), curl_errno($request));
+            throw new Exception("$this->methodWrapper Exception : {$exception->getMessage()},  Curl Error: ".curl_error($request), curl_errno($request));
         }
     }
 
@@ -257,5 +267,4 @@ class Request
         $this->responseWrapper = null;
         $this->wrapper = null;
     }
-
 }
