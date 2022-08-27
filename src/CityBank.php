@@ -82,7 +82,7 @@ class CityBank
         ];
 
         $response = $this->request
-            ->method(Config::METHOD_AUTHENTICATE)
+            ->method(Config::AUTHENTICATE)
             ->payload('auth_info', $payload)
             ->connect();
 
@@ -103,7 +103,7 @@ class CityBank
         $payload = [];
 
         $this->request = $this->request
-            ->method(Config::METHOD_BALANCE)
+            ->method(Config::BALANCE)
             ->payload('get_balance', $payload);
 
         return $this;
@@ -121,7 +121,7 @@ class CityBank
     {
         $payload = [];
         $this->request
-            ->method(Config::METHOD_TRANSFER)
+            ->method(Config::TRANSFER)
             ->payload('Transaction', $payload);
 
         if ($transferData->bank_id == 17): $mode_of_payment = 'CBL Account';
@@ -226,7 +226,7 @@ class CityBank
         ];
 
         $this->request
-            ->method(Config::METHOD_AMENDMENT_OR_CANCEL)
+            ->method(Config::AMENDMENT_OR_CANCEL)
             ->payload('txn_amend_cancel', $payload);
 
         return $this;
@@ -250,7 +250,7 @@ class CityBank
         }
 
         $this->request
-            ->method(Config::METHOD_BKASH_CUSTOMER_VALIDATION)
+            ->method(Config::BKASH_CUSTOMER_VALIDATION)
             ->payload('bkash_customer_validation', $payload);
 
         return $this;
@@ -286,8 +286,8 @@ class CityBank
         $payload['issue_date'] = isset($data['issue_date']) ? $data['issue_date'] : '?';
 
         $this->request
-            ->method(Config::METHOD_BKASH_CUSTOMER_VALIDATION)
-            ->payload('bkash_customer_validation', $payload);
+            ->method(Config::BKASH_TRANSFER)
+            ->payload('do_bkash_transfer', $payload);
 
         return $this;
 
