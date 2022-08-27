@@ -1,8 +1,6 @@
 <?php
 
-
 namespace MahShamim\CityBank;
-
 
 use Exception;
 use InvalidArgumentException;
@@ -42,7 +40,7 @@ class Config
      *
      * @var string[]
      */
-    private $headers = ["Content-type" => 'text/xml;charset="utf-8"'];
+    private $headers = ['Content-type' => 'text/xml;charset="utf-8"'];
 
     /**
      * Config magic variable container
@@ -53,7 +51,8 @@ class Config
 
     /**
      * Config constructor.
-     * @param array $options
+     *
+     * @param  array  $options
      */
     public function __construct($options = [])
     {
@@ -86,34 +85,33 @@ class Config
     {
         switch ($key) {
 
-            case 'base_url' :
+            case 'base_url':
                 $this->configBaseUrl($value);
                 break;
 
-            case 'api_url' :
+            case 'api_url':
                 $this->configApiUrl($value);
                 break;
 
-            case 'mode' :
+            case 'mode':
                 $this->configMode($value);
                 break;
 
-            default :
+            default:
                 $this->values[$key] = $value;
                 break;
         }
     }
 
     /**
-     * @param string $url
+     * @param  string  $url
      */
     public function configBaseUrl($url)
     {
         $metaData = parse_url($url);
 
         if (isset($metaData['host'])) {
-
-            $this->setHeaders("Host", $metaData['host']);
+            $this->setHeaders('Host', $metaData['host']);
 
             $this->values['host'] = $metaData['host'];
 
@@ -128,11 +126,11 @@ class Config
      */
     public function configApiUrl($url)
     {
-        $this->values['api_url'] = ($this->base_url . $url);
+        $this->values['api_url'] = ($this->base_url.$url);
     }
 
     /**
-     * @param string $mode
+     * @param  string  $mode
      */
     public function configMode($mode)
     {
@@ -146,13 +144,15 @@ class Config
     /**
      * Magic isset function for handle unassigned
      * value stored in values array exception
+     *
      * @param $key
      * @return void
+     *
      * @throws Exception
      */
     public function __isset($key)
     {
-        if (!array_key_exists($key, $this->values)) {
+        if (! array_key_exists($key, $this->values)) {
             throw  new Exception("Trying to access an undefined magic property $key");
         }
     }
@@ -167,7 +167,6 @@ class Config
         if (array_key_exists($key, $this->values)) {
             unset($this->values[$key]);
         }
-
     }
 
     /**
@@ -196,7 +195,7 @@ class Config
     /**
      * Force overwrite  the api url
      *
-     * @param string $api_url
+     * @param  string  $api_url
      */
     public function setApiUrl($api_url)
     {

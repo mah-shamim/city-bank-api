@@ -72,10 +72,12 @@ class InstallCommand extends Command
 
             if (file_put_contents($envPath, $apiEnvVariableContent, FILE_APPEND) !== false) {
                 $this->info('Environment variables added successfully.');
+
                 return self::SUCCESS;
             }
 
             $this->error('Environment variables update failed.');
+
             return self::FAILURE;
         }
 
@@ -87,7 +89,7 @@ class InstallCommand extends Command
     /**
      * Return the env values
      *
-     * @param bool $overwrite
+     * @param  bool  $overwrite
      * @return string
      */
     protected function envVariables($overwrite = false)
@@ -105,7 +107,7 @@ class InstallCommand extends Command
             "CITY_BANK_API_USERNAME={$username}",
             "CITY_BANK_API_PASSWORD={$password}",
             "CITY_BANK_EXCHANGE_COMPANY={$company}",
-            "\n"
+            "\n",
         ]);
     }
 }
