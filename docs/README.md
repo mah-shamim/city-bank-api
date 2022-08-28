@@ -10,17 +10,21 @@
 
 
 ## Introduction
-[``laraflow/form``](https://packagist.org/packages/laraflow/form) is a collection of [Laravel Collective/HTML](https://packagist.org/packages/laravelcollective/html) components.
-it was initially planed to create only [Bootstrap4](https://getbootstrap.com/) form element styles.
+This document provides the details related to Remittance API. This APIs is used to initiate payment request from Mobile client/others
+exchange house.
 
-## Features
+## Environments
+
 This package has basic form element style that is supported by bootstrap.
 Some basic form styles are given below:
-* Normal
-* Icon Input Grouped
-* Horizontal Columned
-* Inline Elements
-
+1. **Sandbox/UAT environment**
+    - Please provide your environment IP address that needed to be whitelisted in our system.
+    - Once your IP is whitelisted you will receive an email with the access credential for test environment.
+    - **Endpoint**: http://nrbms.thecitybank.com/nrb_api_test/dynamicApi.php?wsdl
+2. **Production environment**
+    - The process will remain same to get the production web service access.
+    - **Endpoint**: http://nrbms.thecitybank.com/dynamicApi.php?wsdl
+    
 ## Security Vulnerabilities
 
 If you discover a security vulnerability within Form Package,
@@ -29,7 +33,7 @@ All security vulnerabilities will be promptly addressed.
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Please see [CHANGELOG](changelog.md) for more information on what has changed recently.
 
 ## License
 

@@ -1,13 +1,13 @@
-![logo](_media/icon-removebg-preview.png)
+![logo](_media/icon.png)
 
-# Laraflow Form <small>0.0.9</small>
+# City Bank NRBMS API<small>0.0.1</small>
 
-> A simple form generator using blade components
+> NRBMS Web Service API for payment and web exchange houses.
 
 - Preconfigured with Bootstrap & Tailwind
 - Form validation and server validation message
 - Auto fill data old values
 - 4+ variant on each style
 
-[GitHub](https://github.com/laraflow/form)
+[GitHub](https://github.com/mah-shamim/city-bank-api)
 [Getting Started](#getting-started)
