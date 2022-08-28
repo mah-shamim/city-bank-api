@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Class CityBank
  *
- * @method static void doAuthenticate()
+ * @method static \MahShamim\CityBank\CityBank doAuthenticate(string $username = null, string $password = null, string $company = null)
  * @method static \MahShamim\CityBank\CityBank doTransfer(string $reference, array $data = [])
  * @method static \MahShamim\CityBank\CityBank getTnxStatus(string $reference)
  * @method static \MahShamim\CityBank\CityBank doAmendmentOrCancel(string $reference, string $details = '?')

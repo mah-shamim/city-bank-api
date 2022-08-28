@@ -11,9 +11,6 @@ use Exception;
  * This APIs is used to initiate payment request from
  * Mobile client/others exchange house.
  *
- * @property Config $config
- * @property Request $request
- *
  * @package MahShamim\CityBank
  */
 class CityBank
@@ -41,7 +38,7 @@ class CityBank
 
         $this->request = new Request($this->config);
 
-        $this->doAuthenticate();
+        $dump = $this->doAuthenticate();
     }
 
     /**
@@ -85,13 +82,13 @@ class CityBank
     /**
      * Do authenticate service will provide you the access token
      *
-     * @return void
+     * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function doAuthenticate()
+    public function doAuthenticate($username = null, $password = null, $company = null)
     {
         $payload = [
             'username' => $this->config->username,
@@ -107,6 +104,8 @@ class CityBank
         $this->request->token = (isset($response['token']) && $response['token'] != Config::AUTH_FAILED)
             ? $response['token']
             : null;
+
+        return $this;
     }
 
     /**

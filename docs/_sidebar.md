@@ -2,9 +2,9 @@
 
     - [Quick start](quickstart.md)
     
-- Customization
+- API Overviews
 
-    - [Configuration](configuration.md)
+    - [Overviews](overview.md)
     - [Themes](themes.md)
     - [List of Plugins](plugins.md)
     - [Write a Plugin](write-a-plugin.md)

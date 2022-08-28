@@ -41,25 +41,25 @@ For laravel application package is compact with config publish and installation 
 As non-laravel application has a different way of storing configuration and autoload class. please this instruction to
 configure basic settings.
 
-- Package main class constructor expect an array of configuration values you can create separate
-  file to store configuration and pass as a first argument of class constructor.
+- Package main class constructor expect an array of configuration values you can create separate file to store
+  configuration and pass as a first argument of class constructor.
   
-    ```php
-    $config = [
-        'mode' => 'sandbox', # sandbox, live
-        'username' => 'CITY_BANK_API_USERNAME',
-        'password' => 'CITY_BANK_API_PASSWORD',
-        'company' => 'CITY_BANK_EXCHANGE_COMPANY',
-        'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
-        'api_url' => '/dynamicApi.php?wsdl',
-    ];
-  
-  $cityBank = new \MahShamim\CityBank\CityBank($config);
-    ```
-  
+  ```php
+  <?php      
+      $config = [
+                'mode' => 'sandbox', # sandbox, live
+                'username' => 'CITY_BANK_API_USERNAME',
+                'password' => 'CITY_BANK_API_PASSWORD',
+                'company' => 'CITY_BANK_EXCHANGE_COMPANY',
+                'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
+                'api_url' => '/dynamicApi.php?wsdl',
+            ];
+      $cityBank = new \MahShamim\CityBank\CityBank($config);
+  ```
+
 > **Note**: *base_url* for is the entrypoint on API and vary for testing and production environment
-  
-Done. Now you can fully utilize every form elements from these package
+
+Done. Now you can fully utilize every function from these package
 
 # Environments
 
