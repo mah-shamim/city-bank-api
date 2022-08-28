@@ -4,10 +4,9 @@
 
 > NRBMS Web Service API for payment and web exchange houses.
 
-- Preconfigured with Bootstrap & Tailwind
-- Form validation and server validation message
-- Auto fill data old values
-- 4+ variant on each style
+- Minimal Configuration required
+- Packed with both testing & production mode settings
+- Support for frameworks **[Laravel](https://laravel.com/)**, **[CodeIgniter4](https://codeigniter.com/)**, etc and plain **php projects**
 
 [GitHub](https://github.com/mah-shamim/city-bank-api)
-[Getting Started](#getting-started)
+[Getting Started](#city-bank-nrbms-api)

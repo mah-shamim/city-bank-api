@@ -1,87 +1,74 @@
-# Quick start
+# Quick Start
 
-It is recommended to publish form config file to access globally, which helps initializing and previewing the website
-locally.
+This package provides an easy interface and support for integrating the city bank NRBMS web service API. This
+implementation is written for use on a PHP programming language-based application with the additional composer required.
+If you don't have support for composer package manager please clone the GitHub repository and initial package using your
+main class following configuration manuals.
 
 ## Installation
 
 To get start using this package follow these instructions. You can install the package via composer:
 
 ```bash
-composer require laraflow/form
+composer require mah-shamim/city-bank-api
 ```
 
-You need to publish the config file with:
+## Configuration
 
-```bash
-php artisan vendor:publish --tag="form-config"
-```
+This package support all the major frameworks and tested on both
+[Laravel](https://larvel.com) & [CodeIgniter](https://codeigniter.com) framework. It is developed to support plain php
+project with composer autoload enabled. You need to publish the config file with:
 
-This is the contents of the published config file:
+### Laravel
 
-```php
-return [
-    /**
-     * Form style validation and other component will
-     * be selected form this section
-     * @var string style
-     * @value bootstrap3, bootstrap4, bootstrap5
-     */
-    'style' => 'bootstrap4',
+For laravel application package is compact with config publish and installation command.
 
-    /**
-     * Form local language for field that support localization
-     *
-     * @reference month, day etc
-     * @var string style
-     * @value bootstrap3, bootstrap4, bootstrap5
-     */
-    'locale' => 'en',
+- **Installation command**:
+  This artisan command follow through publishing configuration and appending the required environment variables to
+  application.
+    ```bash
+    php artisan city-bank:install
+    ```
+- **Config publish command**:
+  This is default laravel configuration file publish command. you have to copy the environment variables from
+  configuration file.
+    ```bash
+    php artisan vendor:publish --tag="city-bank-config"
+    ```
 
-    /**
-     * Form month values what value and label month dropdown
-     * will have
-     *
-     * @var array month
-     */
+### Non-Laravel
 
-    'months' => [
-        "1" => "January",
-        "2" => "February",
-        "3" => "March",
-        "4" => "April",
-        "5" => "May",
-        "6" => "June",
-        "7" => "July",
-        "8" => "August",
-        "9" => "September",
-        "10" => "October",
-        "11" => "November",
-        "12" => "December"
-    ],
+As non-laravel application has a different way of storing configuration and autoload class. please this instruction to
+configure basic settings.
 
-    /**
-     * Form day values what value and label day dropdown
-     * will have
-     * @var array month
-     */
-
-    'days' => [
-        "1" => "Saturday",
-        "2" => "Sunday",
-        "3" => "Monday",
-        "4" => "Tuesday",
-        "5" => "Wednesday",
-        "6" => "Thursday",
-        "7" => "Friday"
-    ],
-];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="form-views"
-```
-
+- Package main class constructor expect an array of configuration values you can create separate
+  file to store configuration and pass as a first argument of class constructor.
+  
+    ```php
+    $config = [
+        'mode' => 'sandbox', # sandbox, live
+        'username' => 'CITY_BANK_API_USERNAME',
+        'password' => 'CITY_BANK_API_PASSWORD',
+        'company' => 'CITY_BANK_EXCHANGE_COMPANY',
+        'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
+        'api_url' => '/dynamicApi.php?wsdl',
+    ];
+  
+  $cityBank = new \MahShamim\CityBank\CityBank($config);
+    ```
+  
+> **Note**: *base_url* for is the entrypoint on API and vary for testing and production environment
+  
 Done. Now you can fully utilize every form elements from these package
+
+# Environments
+
+This package has basic form element style that is supported by bootstrap. Some basic form styles are given below:
+
+1. **Sandbox/UAT environment**
+    - Please provide your environment IP address that needed to be whitelisted in our system.
+    - Once your IP is whitelisted you will receive an email with the access credential for test environment.
+    - **Endpoint**: http://nrbms.thecitybank.com/nrb_api_test/dynamicApi.php?wsdl
+2. **Production environment**
+    - The process will remain same to get the production web service access.
+    - **Endpoint**: http://nrbms.thecitybank.com/dynamicApi.php?wsdl
