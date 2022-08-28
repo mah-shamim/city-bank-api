@@ -20,20 +20,16 @@ composer require mah-shamim/city-bank-api
 ###For Non-Laravel Projects
 ```php
 $config = [
-        'mode' => \MahShamim\CityBank\CityBank::MODE_SANDBOX,
-        'username' => env('CITY_BANK_API_USERNAME'),
-        'password' => env('CITY_BANK_API_PASSWORD'),
-        'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
-        'host' => 'nrbms.thecitybank.com',
+        'mode' => 'sandbox',
+        'username' => 'CITY_BANK_API_USERNAME',
+        'password' => 'CITY_BANK_API_PASSWORD',
+        'company' => 'CITY_BANK_EXCHANGE_COMPANY',
         'base_url' => 'https://nrbms.thecitybank.com',
         'api_url' => '/nrb_api_test/dynamicApi.php?wsdl',
     ];
     
-$status = 'sandbox';
 
-$cityBank = new \MahShamim\CityBank($config, $status);
-
-$response = $cityBank->authenticate();
+$cityBank = new \MahShamim\CityBank($config);
 ```
 
 ###For Laravel & Lumen
@@ -54,22 +50,20 @@ This is the contents of the published config file:
 
 ```php
 return [
-    'mode' => env('CITY_BANK_API_MODE', \MahShamim\CityBank\CityBank::MODE_SANDBOX), //sandbox, live
-    \MahShamim\CityBank\CityBank::MODE_SANDBOX => [
-        'mode' => \MahShamim\CityBank\CityBank::MODE_SANDBOX,
+    'mode' => env('CITY_BANK_API_MODE', \MahShamim\CityBank\Config::MODE_SANDBOX), //sandbox, live
+    'sandbox' => [
+        'mode' => \MahShamim\CityBank\Config::MODE_SANDBOX,
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
         'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
-        'host' => 'nrbms.thecitybank.com',
-        'base_url' => 'https://nrbms.thecitybank.com',
-        'api_url' => '/nrb_api_test/dynamicApi.php?wsdl',
+        'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
+        'api_url' => '/dynamicApi.php?wsdl',
     ],
-    \MahShamim\CityBank\CityBank::MODE_LIVE => [
-        'mode' => \MahShamim\CityBank\CityBank::MODE_LIVE,
+    'live' => [
+        'mode' => \MahShamim\CityBank\Config::MODE_LIVE,
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
         'company' => env('CITY_BANK_EXCHANGE_COMPANY'),
-        'host' => 'nrbms.thecitybank.com',
         'base_url' => 'https://nrbms.thecitybank.com',
         'api_url' => '/dynamicApi.php?wsdl',
     ],
