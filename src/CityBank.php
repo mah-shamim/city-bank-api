@@ -35,7 +35,10 @@ class CityBank
     public function __construct($config = [])
     {
         $this->config = new Config($config);
-
+    }
+    
+    public function init() {
+     
         $this->request = new Request($this->config);
 
         $dump = $this->doAuthenticate();
