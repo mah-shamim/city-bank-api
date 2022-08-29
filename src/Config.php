@@ -57,6 +57,18 @@ class Config
      */
     private $values = [];
 
+
+    private $urls = [
+        'sandbox' => [
+            'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
+            'api_url' => '/dynamicApi.php?wsdl',
+        ],
+        'live' => [
+            'base_url' => 'https://nrbms.thecitybank.com',
+            'api_url' => '/dynamicApi.php?wsdl',
+        ],
+    ];
+
     /**
      * Config constructor.
      *
@@ -67,7 +79,16 @@ class Config
         foreach ($options as $property => $value) {
             $this->{$property} = $value;
         }
+
+        if (!isset($this->base_url)) {
+            $this->base_url = $this->urls[$this->mode]['base_url'];
+        }
+
+        if (!isset($this->api_url)) {
+            $this->api_url = $this->urls[$this->mode]['api_url'];
+        }
     }
+
 
     /**
      * Magic getter function for dynamic
@@ -114,7 +135,7 @@ class Config
     /**
      * @param  string  $url
      */
-    public function configBaseUrl($url)
+    private function configBaseUrl($url)
     {
         $metaData = parse_url($url);
 
@@ -132,7 +153,7 @@ class Config
     /**
      * @param $url
      */
-    public function configApiUrl($url)
+    private function configApiUrl($url)
     {
         $this->values['api_url'] = ($this->base_url.$url);
     }
@@ -140,7 +161,7 @@ class Config
     /**
      * @param  string  $mode
      */
-    public function configMode($mode)
+    private function configMode($mode)
     {
         if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
             $this->values['mode'] = $mode;

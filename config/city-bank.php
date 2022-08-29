@@ -2,7 +2,7 @@
 
 return [
     'mode' => env('CITY_BANK_API_MODE', \MahShamim\CityBank\Config::MODE_SANDBOX), //sandbox, live
-    \MahShamim\CityBank\Config::MODE_SANDBOX => [
+    'sandbox' => [
         'mode' => \MahShamim\CityBank\Config::MODE_SANDBOX,
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
@@ -10,7 +10,7 @@ return [
         'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
         'api_url' => '/dynamicApi.php?wsdl',
     ],
-    \MahShamim\CityBank\Config::MODE_LIVE => [
+    'live' => [
         'mode' => \MahShamim\CityBank\Config::MODE_LIVE,
         'username' => env('CITY_BANK_API_USERNAME'),
         'password' => env('CITY_BANK_API_PASSWORD'),
