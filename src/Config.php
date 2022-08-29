@@ -57,7 +57,6 @@ class Config
      */
     private $values = [];
 
-
     private $urls = [
         'sandbox' => [
             'base_url' => 'https://nrbms.thecitybank.com/nrb_api_test',
@@ -80,15 +79,14 @@ class Config
             $this->{$property} = $value;
         }
 
-        if (!isset($this->base_url)) {
+        if (! isset($this->base_url)) {
             $this->base_url = $this->urls[$this->mode]['base_url'];
         }
 
-        if (!isset($this->api_url)) {
+        if (! isset($this->api_url)) {
             $this->api_url = $this->urls[$this->mode]['api_url'];
         }
     }
-
 
     /**
      * Magic getter function for dynamic

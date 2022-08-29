@@ -10,8 +10,6 @@ use Exception;
  * This class provides the details related to Remittance API.
  * This APIs is used to initiate payment request from
  * Mobile client/others exchange house.
- *
- * @package MahShamim\CityBank
  */
 class CityBank
 {
@@ -28,7 +26,7 @@ class CityBank
     /**
      * CityBank constructor.
      *
-     * @param array $config
+     * @param  array  $config
      *
      * @throws Exception
      */
@@ -124,10 +122,11 @@ class CityBank
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
      * @param $reference
-     * @param array $data
+     * @param  array  $data
      * @return self
      *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function doTransfer($reference, $data = [])
@@ -160,8 +159,8 @@ class CityBank
         $payload['mode_of_payment'] = isset($data['mode_of_payment']) ? $data['mode_of_payment'] : '';
         $payload['issue_date'] = isset($data['issue_date']) ? $data['issue_date'] : '';
         for ($i = 1; $i <= 10; $i++) {
-            $payload['custom_field_name_' . $i] = isset($data['custom_field_name_' . $i]) ? $data['custom_field_name_' . $i] : '?';
-            $payload['custom_field_value_' . $i] = isset($data['custom_field_value_' . $i]) ? $data['custom_field_value_' . $i] : '?';
+            $payload['custom_field_name_'.$i] = isset($data['custom_field_name_'.$i]) ? $data['custom_field_name_'.$i] : '?';
+            $payload['custom_field_value_'.$i] = isset($data['custom_field_value_'.$i]) ? $data['custom_field_value_'.$i] : '?';
         }
         $this->request
             ->method(Config::TRANSFER)
@@ -173,7 +172,7 @@ class CityBank
     /**
      * Get transaction status service will help you to get the transaction status
      *
-     * @param string $reference
+     * @param  string  $reference
      * @return self
      *
      * @throws Exception
@@ -204,7 +203,7 @@ class CityBank
      */
     public function doAmendmentOrCancel($reference, $details = '?')
     {
-        $payload = ['reference_no' => $reference, 'amend_query' => $details,];
+        $payload = ['reference_no' => $reference, 'amend_query' => $details];
 
         $this->request
             ->method(Config::AMENDMENT_OR_CANCEL)
@@ -237,7 +236,7 @@ class CityBank
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
      * @param $mobileNumber
-     * @param string $fullName
+     * @param  string  $fullName
      * @return self
      *
      * @throws Exception
@@ -262,10 +261,12 @@ class CityBank
     /**
      * Do Bkash transfer service will help you to send a bkash transaction
      *
-     * @param string|integer $reference
-     * @param array $data
+     * @param  string|int  $reference
+     * @param  array  $data
      * @return self
+     *
      * @throws Exception
+     *
      * @since 2.1.0
      */
     public function doBkashTransfer($reference, $data = [])
@@ -324,6 +325,7 @@ class CityBank
      * @return mixed
      *
      * @throws Exception
+     *
      * @since 2.1.0
      */
     public function getBkashTnxStatus($reference)
