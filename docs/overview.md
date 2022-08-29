@@ -1,9 +1,8 @@
 # API Overviews
 
 ## Revision history
-
-|:No:|:Service:|:Description:|:Version:|
-|--|-------|-----------|-------|
+| No  |  Service  |  Description  |    Version  |
+|----:|-----------|---------------|:-----------:|
 |1| doAuthenticate | Do authenticate service will provide you the access token| 2.0 | 
 |2| doTransfer | Do transfer service will help you to send a new transaction|2.0|
 |3| getTnxStatus | Get transaction status service will help you to get the transaction status|2.0| 
@@ -35,7 +34,7 @@ Do authenticate service will provide you the access token by providing following
 ```php
 <?php 
 //Laravel
-$client = \MahShamim\CityBank\Facades\CityBank::doAuthenticate();
+$client = \MahShamim\CityBank\Facades\CityBank::init()->doAuthenticate();
 
 //Non-Laravel
 $client = new \MahShamim\CityBank\CityBank();
