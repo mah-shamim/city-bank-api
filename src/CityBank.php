@@ -36,12 +36,21 @@ class CityBank
     {
         $this->config = new Config($config);
     }
-    
-    public function init() {
-     
+
+    /**
+     * Initialize the API client class
+     *
+     * @return self
+     *
+     * @throws Exception
+     */
+    public function init()
+    {
         $this->request = new Request($this->config);
 
-        $dump = $this->doAuthenticate();
+        $this->doAuthenticate();
+
+        return $this;
     }
 
     /**
@@ -91,7 +100,7 @@ class CityBank
      *
      * @since 2.0.0
      */
-    public function doAuthenticate($username = null, $password = null, $company = null)
+    public function doAuthenticate()
     {
         $payload = [
             'username' => $this->config->username,
