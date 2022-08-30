@@ -17,7 +17,7 @@ composer require mah-shamim/city-bank-api
 
 ## Usage
 
-###For Non-Laravel Projects
+### For Non-Laravel Projects
 ```php
 $config = [
         'mode' => 'sandbox',
@@ -32,7 +32,7 @@ $config = [
 $cityBank = new \MahShamim\CityBank($config);
 ```
 
-###For Laravel & Lumen
+### For Laravel & Lumen
 
 You can set up whole configuration using this command
 ```bash
