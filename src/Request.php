@@ -3,36 +3,30 @@
 namespace MahShamim\CityBank;
 
 use Exception;
-use JsonException;
 use SimpleXMLElement;
 
 class Request
 {
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var string
-     */
-    private $methodWrapper;
-
-    /**
-     * @var array
-     */
-    private $payload = [];
-
-    /**
      * @var string
      */
     public $token;
-
     /**
      * @var string
      */
     public $responseWrapper;
-
+    /**
+     * @var Config
+     */
+    private $config;
+    /**
+     * @var string
+     */
+    private $methodWrapper;
+    /**
+     * @var array
+     */
+    private $payload = [];
     /**
      * @var string
      */
@@ -41,20 +35,20 @@ class Request
     /**
      * Request constructor.
      *
-     * @param  Config  $config
+     * @param Config $config
      *
      * @throws Exception
      */
-    public function __construct($config)
+    public function __construct(Config $config)
     {
         $this->config = $config;
     }
 
     /**
-     * @param  string  $method
+     * @param string $method
      * @return $this
      */
-    public function method($method)
+    public function method(string $method)
     {
         $this->methodWrapper = $method;
 
@@ -64,12 +58,12 @@ class Request
     }
 
     /**
-     * @param  array  $data
+     * @param string $wrapper
+     * @param array $data
      * @return $this
      *
-     * @throws Exception
      */
-    public function payload($wrapper, $data = [])
+    public function payload(string $wrapper, array $data = [])
     {
         $this->payload = $data;
 
@@ -86,104 +80,6 @@ class Request
     public function getXml()
     {
         return $this->preparePayload();
-    }
-
-    /**
-     * @return mixed|string
-     *
-     * @throws Exception
-     */
-    public function connect()
-    {
-        $response = '';
-
-        if (! function_exists('curl_version')) {
-            throw new Exception('Curl extension is not enabled.', 500);
-        }
-
-        $client = curl_init();
-
-        try {
-            $curlOptions = $this->curlOptions();
-
-            curl_setopt_array($client, $curlOptions);
-
-            $response = curl_exec($client);
-
-            if (strlen($response) == 0 && $response == false) {
-                throw new Exception('Curl response is empty');
-            }
-        } catch (Exception $exception) {
-            $this->handleException($client, $exception);
-        }
-
-        logger('API Response'.$response);
-
-        curl_close($client);
-
-        return $this->formatResponse($response);
-    }
-
-    /**
-     * @return array
-     *
-     * @throws Exception
-     */
-    private function curlOptions()
-    {
-        $xmlString = $this->preparePayload();
-
-        $this->config->setHeaders('Content-length', strlen($xmlString));
-        $this->config->setHeaders('SOAPAction', $this->methodWrapper);
-
-        return [
-            CURLOPT_SSL_VERIFYPEER => 0,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $xmlString,
-            CURLOPT_HTTPHEADER => $this->config->getHeaders(),
-            CURLOPT_URL => $this->config->api_url,
-        ];
-    }
-
-    /**
-     * @param  string  $response
-     *
-     * @throws Exception
-     */
-    private function formatResponse($response = '')
-    {
-        \Log::info("$this->methodWrapper \n ".$response);
-
-        $response = trim(str_replace([
-            '<SOAP-ENV:Body>',
-            '</SOAP-ENV:Body>',
-            'xmlns:ns1="urn:dynamicapi"',
-            'ns1:', ], '', $response));
-
-        try {
-            $response = new SimpleXMLElement($response);
-
-            $response = ($response instanceof SimpleXMLElement)
-                ? json_decode(json_encode($response), true)
-                : '';
-
-            if (isset($response[$this->responseWrapper]['Response'])) {
-                $response = json_decode($response[$this->responseWrapper]['Response'], true);
-
-                if (json_last_error() != JSON_ERROR_NONE) {
-                    throw new JsonException(json_last_error_msg(), json_last_error());
-                }
-            }
-        } catch (Exception $exception) {
-            throw new Exception($exception->getMessage());
-        } finally {
-            $this->cleanup();
-
-            return $response;
-        }
     }
 
     /**
@@ -235,18 +131,78 @@ class Request
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:'.$this->methodWrapper.' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        <'.$this->wrapper.' xsi:type="urn:'.$this->wrapper.'">
-                            '.$content.'
-                       </'.$this->wrapper.'>
-                    </urn:'.$this->methodWrapper.'>
+                    <urn:' . $this->methodWrapper . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        <' . $this->wrapper . ' xsi:type="urn:' . $this->wrapper . '">
+                            ' . $content . '
+                       </' . $this->wrapper . '>
+                    </urn:' . $this->methodWrapper . '>
                 </soapenv:Body>
             </soapenv:Envelope>';
     }
 
     /**
+     * @return mixed|string
+     *
+     * @throws Exception
+     */
+    public function connect()
+    {
+        $response = '';
+
+        if (!function_exists('curl_version')) {
+            throw new Exception('Curl extension is not enabled.', 500);
+        }
+
+        $client = curl_init();
+
+        try {
+            $curlOptions = $this->curlOptions();
+
+            curl_setopt_array($client, $curlOptions);
+
+            $response = curl_exec($client);
+
+            if (strlen($response) == 0 && $response == false) {
+                throw new Exception('Curl response is empty');
+            }
+        } catch (Exception $exception) {
+            $this->handleException($client, $exception);
+        }
+
+        logger('API Response' . $response);
+
+        curl_close($client);
+
+        return $this->formatResponse($response);
+    }
+
+    /**
+     * @return array
+     *
+     * @throws Exception
+     */
+    private function curlOptions()
+    {
+        $xmlString = $this->preparePayload();
+
+        $this->config->setHeaders('Content-length', strlen($xmlString));
+        $this->config->setHeaders('SOAPAction', $this->methodWrapper);
+
+        return [
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $xmlString,
+            CURLOPT_HTTPHEADER => $this->config->getHeaders(),
+            CURLOPT_URL => $this->config->api_url,
+        ];
+    }
+
+    /**
      * @param $request
-     * @param  null  $exception
+     * @param null $exception
      * @return void
      *
      * @throws Exception
@@ -254,9 +210,46 @@ class Request
     private function handleException($request, $exception)
     {
         if ($this->config->mode == Config::MODE_LIVE) {
-            logger("$this->methodWrapper Request Error : ".curl_error($request));
+            logger("$this->methodWrapper Request Error : " . curl_error($request));
         } else {
-            throw new Exception("$this->methodWrapper Exception : {$exception->getMessage()},  Curl Error: ".curl_error($request), curl_errno($request));
+            throw new Exception("$this->methodWrapper Exception : {$exception->getMessage()},  Curl Error: " . curl_error($request), curl_errno($request));
+        }
+    }
+
+    /**
+     * @param string $response
+     *
+     * @return mixed|string
+     * @throws Exception
+     */
+    private function formatResponse(string $response = '')
+    {
+        $response = trim(str_replace([
+            '<SOAP-ENV:Body>',
+            '</SOAP-ENV:Body>',
+            'xmlns:ns1="urn:dynamicapi"',
+            'ns1:',], '', $response));
+
+        try {
+            $response = new SimpleXMLElement($response);
+
+            $response = ($response instanceof SimpleXMLElement)
+                ? json_decode(json_encode($response), true)
+                : '';
+
+            if (isset($response[$this->responseWrapper]['Response'])) {
+                $response = json_decode($response[$this->responseWrapper]['Response'], true);
+
+                if (json_last_error() != JSON_ERROR_NONE) {
+                    throw new \JsonException(json_last_error_msg(), json_last_error());
+                }
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage());
+        } finally {
+            $this->cleanup();
+
+            return $response;
         }
     }
 
