@@ -71,7 +71,7 @@ class Config
     /**
      * Config constructor.
      *
-     * @param array $options
+     * @param  array  $options
      */
     public function __construct(array $options = [])
     {
@@ -130,7 +130,7 @@ class Config
     }
 
     /**
-     * @param string $url
+     * @param  string  $url
      */
     private function configBaseUrl(string $url)
     {
@@ -152,11 +152,11 @@ class Config
      */
     private function configApiUrl($url)
     {
-        $this->values['api_url'] = ($this->base_url . $url);
+        $this->values['api_url'] = ($this->base_url.$url);
     }
 
     /**
-     * @param string $mode
+     * @param  string  $mode
      */
     private function configMode(string $mode)
     {
@@ -178,7 +178,7 @@ class Config
      */
     public function __isset($key)
     {
-        if (!array_key_exists($key, $this->values)) {
+        if (! array_key_exists($key, $this->values)) {
             throw  new Exception("Trying to access an undefined magic property $key");
         }
 
@@ -223,7 +223,7 @@ class Config
     /**
      * Force overwrite  the api url
      *
-     * @param string $api_url
+     * @param  string  $api_url
      */
     public function setApiUrl(string $api_url)
     {

@@ -11,22 +11,27 @@ class Request
      * @var string
      */
     public $token;
+
     /**
      * @var string
      */
     public $responseWrapper;
+
     /**
      * @var Config
      */
     private $config;
+
     /**
      * @var string
      */
     private $methodWrapper;
+
     /**
      * @var array
      */
     private $payload = [];
+
     /**
      * @var string
      */
@@ -35,7 +40,7 @@ class Request
     /**
      * Request constructor.
      *
-     * @param Config $config
+     * @param  Config  $config
      *
      * @throws Exception
      */
@@ -45,7 +50,7 @@ class Request
     }
 
     /**
-     * @param string $method
+     * @param  string  $method
      * @return $this
      */
     public function method(string $method)
@@ -58,10 +63,9 @@ class Request
     }
 
     /**
-     * @param string $wrapper
-     * @param array $data
+     * @param  string  $wrapper
+     * @param  array  $data
      * @return $this
-     *
      */
     public function payload(string $wrapper, array $data = [])
     {
@@ -131,11 +135,11 @@ class Request
             <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
                 <soapenv:Header/>
                 <soapenv:Body>
-                    <urn:' . $this->methodWrapper . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        <' . $this->wrapper . ' xsi:type="urn:' . $this->wrapper . '">
-                            ' . $content . '
-                       </' . $this->wrapper . '>
-                    </urn:' . $this->methodWrapper . '>
+                    <urn:'.$this->methodWrapper.' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        <'.$this->wrapper.' xsi:type="urn:'.$this->wrapper.'">
+                            '.$content.'
+                       </'.$this->wrapper.'>
+                    </urn:'.$this->methodWrapper.'>
                 </soapenv:Body>
             </soapenv:Envelope>';
     }
@@ -149,7 +153,7 @@ class Request
     {
         $response = '';
 
-        if (!function_exists('curl_version')) {
+        if (! function_exists('curl_version')) {
             throw new Exception('Curl extension is not enabled.', 500);
         }
 
@@ -169,7 +173,7 @@ class Request
             $this->handleException($client, $exception);
         }
 
-        logger('API Response' . $response);
+        logger('API Response'.$response);
 
         curl_close($client);
 
@@ -202,7 +206,7 @@ class Request
 
     /**
      * @param $request
-     * @param Exception|null $exception
+     * @param  Exception|null  $exception
      * @return void
      *
      * @throws Exception
@@ -210,16 +214,16 @@ class Request
     private function handleException($request, $exception)
     {
         if ($this->config->mode == Config::MODE_LIVE) {
-            logger("$this->methodWrapper Request Error : " . curl_error($request));
+            logger("$this->methodWrapper Request Error : ".curl_error($request));
         } else {
-            throw new Exception("$this->methodWrapper Exception : {$exception->getMessage()},  Curl Error: " . curl_error($request), curl_errno($request));
+            throw new Exception("$this->methodWrapper Exception : {$exception->getMessage()},  Curl Error: ".curl_error($request), curl_errno($request));
         }
     }
 
     /**
-     * @param string $response
-     *
+     * @param  string  $response
      * @return mixed|string
+     *
      * @throws Exception
      */
     private function formatResponse(string $response = '')
@@ -228,7 +232,7 @@ class Request
             '<SOAP-ENV:Body>',
             '</SOAP-ENV:Body>',
             'xmlns:ns1="urn:dynamicapi"',
-            'ns1:',], '', $response));
+            'ns1:', ], '', $response));
 
         try {
             $response = simplexml_load_string($response);
@@ -249,6 +253,7 @@ class Request
         }
 
         $this->cleanup();
+
         return $response;
     }
 

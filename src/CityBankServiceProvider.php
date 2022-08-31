@@ -16,7 +16,7 @@ class CityBankServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/city-bank.php' => config_path('city-bank.php'),
+            __DIR__.'/../config/city-bank.php' => config_path('city-bank.php'),
         ], 'city-bank-config');
 
         if ($this->app->runningInConsole()) {
@@ -32,7 +32,7 @@ class CityBankServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/city-bank.php',
+            __DIR__.'/../config/city-bank.php',
             'city-bank'
         );
 

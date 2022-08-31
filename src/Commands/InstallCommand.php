@@ -89,7 +89,7 @@ class InstallCommand extends Command
     /**
      * Return the env values
      *
-     * @param bool $overwrite
+     * @param  bool  $overwrite
      * @return string
      */
     protected function envVariables(bool $overwrite = false)

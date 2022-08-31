@@ -26,13 +26,13 @@ class CityBank
     /**
      * CityBank constructor.
      *
-     * @param array|object $config
+     * @param  array|object  $config
      *
      * @throws Exception
      */
     public function __construct($config = [])
     {
-        $config = is_object($config) ? (array)$config : $config;
+        $config = is_object($config) ? (array) $config : $config;
 
         $this->config = new Config($config);
     }
@@ -161,8 +161,8 @@ class CityBank
         $payload['special_instruction'] = $data['special_instruction'] ?? 'NA';
         $payload['issue_date'] = $data['issue_date'] ?? '';
         for ($i = 1; $i <= 10; $i++) {
-            $payload['custom_field_name_' . $i] = $data['custom_field_name_' . $i] ?? '?';
-            $payload['custom_field_value_' . $i] = $data['custom_field_value_' . $i] ?? '?';
+            $payload['custom_field_name_'.$i] = $data['custom_field_name_'.$i] ?? '?';
+            $payload['custom_field_value_'.$i] = $data['custom_field_value_'.$i] ?? '?';
         }
         $this->request
             ->method(Config::TRANSFER)
@@ -174,7 +174,7 @@ class CityBank
     /**
      * Get transaction status service will help you to get the transaction status
      *
-     * @param mixed $reference
+     * @param  mixed  $reference
      * @return self
      *
      * @throws Exception
@@ -195,8 +195,8 @@ class CityBank
     /**
      * Do amendment or cancel service will help you to send the transaction cancel/amendment request
      *
-     * @param mixed $reference
-     * @param string $details
+     * @param  mixed  $reference
+     * @param  string  $details
      * @return self
      *
      * @throws Exception
@@ -237,8 +237,8 @@ class CityBank
     /**
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
-     * @param string $mobileNumber
-     * @param string $fullName
+     * @param  string  $mobileNumber
+     * @param  string  $fullName
      * @return self
      *
      * @throws Exception
@@ -263,8 +263,8 @@ class CityBank
     /**
      * Do Bkash transfer service will help you to send a bkash transaction
      *
-     * @param mixed $reference
-     * @param array $data
+     * @param  mixed  $reference
+     * @param  array  $data
      * @return self
      *
      * @throws Exception
@@ -323,7 +323,7 @@ class CityBank
     /**
      * This service call will provide you the bkash transaction status.
      *
-     * @param mixed $reference
+     * @param  mixed  $reference
      * @return self
      *
      * @throws Exception
