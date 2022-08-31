@@ -175,7 +175,7 @@ class Config
      * value stored in values array exception
      *
      * @param $key
-     * @return void
+     * @return bool
      *
      * @throws Exception
      */
@@ -184,6 +184,8 @@ class Config
         if (!array_key_exists($key, $this->values)) {
             throw  new Exception("Trying to access an undefined magic property $key");
         }
+
+        return true;
     }
 
     /**

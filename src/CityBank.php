@@ -91,7 +91,7 @@ class CityBank
      */
     public function token()
     {
-        if (is_null($this->request->token)) {
+        if (strlen($this->request->token) == 0) {
             $this->doAuthenticate();
         }
 
@@ -142,6 +142,7 @@ class CityBank
         $payload['remitter_id_passport_no'] = $data['remitter_id_passport_no'] ?? '';
         $payload['issuing_country'] = $data['issuing_country'] ?? '';
         $payload['beneficiary_name'] = $data['beneficiary_name'] ?? '';
+        $payload['mode_of_payment'] = $data['mode_of_payment'] ?? '';
         if (in_array($payload['mode_of_payment'], ['CBL Account', 'Other Bank'])) {
             $payload['beneficiary_account_no'] = $data['beneficiary_account_no'] ?? '';
             $payload['beneficiary_bank_account_type'] = $data['beneficiary_bank_account_type'] ?? '';
@@ -159,7 +160,6 @@ class CityBank
         $payload['beneficiary_address'] = $data['beneficiary_address'] ?? '';
         $payload['beneficiary_id_no'] = $data['beneficiary_id_no'] ?? '';
         $payload['special_instruction'] = $data['special_instruction'] ?? 'NA';
-        $payload['mode_of_payment'] = $data['mode_of_payment'] ?? '';
         $payload['issue_date'] = $data['issue_date'] ?? '';
         for ($i = 1; $i <= 10; $i++) {
             $payload['custom_field_name_' . $i] = $data['custom_field_name_' . $i] ?? '?';
@@ -175,7 +175,7 @@ class CityBank
     /**
      * Get transaction status service will help you to get the transaction status
      *
-     * @param string|int
+     * @param mixed $reference
      * @return self
      *
      * @throws Exception
@@ -196,8 +196,8 @@ class CityBank
     /**
      * Do amendment or cancel service will help you to send the transaction cancel/amendment request
      *
-     * @param string|int
-     * @param string
+     * @param mixed $reference
+     * @param string $details
      * @return self
      *
      * @throws Exception
@@ -238,8 +238,8 @@ class CityBank
     /**
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
-     * @param string
-     * @param string
+     * @param string $mobileNumber
+     * @param string $fullName
      * @return self
      *
      * @throws Exception
@@ -264,7 +264,7 @@ class CityBank
     /**
      * Do Bkash transfer service will help you to send a bkash transaction
      *
-     * @param string|integer
+     * @param mixed $reference
      * @param array $data
      * @return self
      * @throws Exception
@@ -322,7 +322,7 @@ class CityBank
     /**
      * This service call will provide you the bkash transaction status.
      *
-     * @param string|int
+     * @param mixed $reference
      * @return self
      *
      * @throws Exception

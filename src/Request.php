@@ -94,7 +94,7 @@ class Request
         $content = '';
 
         if ($this->methodWrapper != Config::AUTHENTICATE) {
-            if (is_null($this->token)) {
+            if (strlen($this->token) == 0) {
                 throw new Exception('Authenticate Token is missing');
             }
 
@@ -202,7 +202,7 @@ class Request
 
     /**
      * @param $request
-     * @param null $exception
+     * @param Exception|null $exception
      * @return void
      *
      * @throws Exception
@@ -231,7 +231,7 @@ class Request
             'ns1:',], '', $response));
 
         try {
-            $response = new SimpleXMLElement($response);
+            $response = simplexml_load_string($response);
 
             $response = ($response instanceof SimpleXMLElement)
                 ? json_decode(json_encode($response), true)
@@ -246,18 +246,17 @@ class Request
             }
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
-        } finally {
-            $this->cleanup();
-
-            return $response;
         }
+
+        $this->cleanup();
+        return $response;
     }
 
     private function cleanup()
     {
         $this->payload = [];
-        $this->methodWrapper = null;
-        $this->responseWrapper = null;
-        $this->wrapper = null;
+        $this->methodWrapper = '';
+        $this->responseWrapper = '';
+        $this->wrapper = '';
     }
 }

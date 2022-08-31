@@ -50,8 +50,7 @@
         ]
     },
     "scripts": {
-        "analyse": "vendor/bin/phpstan analyse",
-        "format": "vendor/bin/pint"
+        "analyse": "vendor/bin/phpstan analyse"
     },
     "config": {
         "sort-packages": true,
