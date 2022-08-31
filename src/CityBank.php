@@ -10,8 +10,6 @@ use Exception;
  * This class provides the details related to Remittance API.
  * This APIs is used to initiate payment request from
  * Mobile client/others exchange house.
- *
- * @package MahShamim\CityBank
  */
 class CityBank
 {
@@ -126,10 +124,11 @@ class CityBank
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
      * @param $reference
-     * @param array $data
+     * @param  array  $data
      * @return self
      *
      * @throws Exception
+     *
      * @since 2.0.0
      */
     public function doTransfer($reference, array $data = [])
@@ -206,7 +205,7 @@ class CityBank
      */
     public function doAmendmentOrCancel($reference, string $details = '?')
     {
-        $payload = ['reference_no' => $reference, 'amend_query' => $details,];
+        $payload = ['reference_no' => $reference, 'amend_query' => $details];
 
         $this->request
             ->method(Config::AMENDMENT_OR_CANCEL)
@@ -267,7 +266,9 @@ class CityBank
      * @param mixed $reference
      * @param array $data
      * @return self
+     *
      * @throws Exception
+     *
      * @since 2.1.0
      */
     public function doBkashTransfer($reference, array $data = [])
@@ -326,6 +327,7 @@ class CityBank
      * @return self
      *
      * @throws Exception
+     *
      * @since 2.1.0
      */
     public function getBkashTnxStatus($reference)
