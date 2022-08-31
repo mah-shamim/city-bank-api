@@ -3,11 +3,20 @@
 namespace MahShamim\CityBank;
 
 use Exception;
-use JsonException;
 use SimpleXMLElement;
 
 class Request
 {
+    /**
+     * @var string
+     */
+    public $token;
+
+    /**
+     * @var string
+     */
+    public $responseWrapper;
+
     /**
      * @var Config
      */
@@ -26,16 +35,6 @@ class Request
     /**
      * @var string
      */
-    public $token;
-
-    /**
-     * @var string
-     */
-    public $responseWrapper;
-
-    /**
-     * @var string
-     */
     private $wrapper;
 
     /**
@@ -45,7 +44,7 @@ class Request
      *
      * @throws Exception
      */
-    public function __construct($config)
+    public function __construct(Config $config)
     {
         $this->config = $config;
     }
@@ -54,7 +53,7 @@ class Request
      * @param  string  $method
      * @return $this
      */
-    public function method($method)
+    public function method(string $method)
     {
         $this->methodWrapper = $method;
 
@@ -64,12 +63,11 @@ class Request
     }
 
     /**
+     * @param  string  $wrapper
      * @param  array  $data
      * @return $this
-     *
-     * @throws Exception
      */
-    public function payload($wrapper, $data = [])
+    public function payload(string $wrapper, array $data = [])
     {
         $this->payload = $data;
 
@@ -86,6 +84,64 @@ class Request
     public function getXml()
     {
         return $this->preparePayload();
+    }
+
+    /**
+     * Render the payload array to a xml response string
+     *
+     * @return string
+     *
+     * @throws Exception
+     */
+    private function preparePayload()
+    {
+        $content = '';
+
+        if ($this->methodWrapper != Config::AUTHENTICATE) {
+            if (strlen($this->token) == 0) {
+                throw new Exception('Authenticate Token is missing');
+            }
+
+            $this->payload['token'] = $this->token;
+        }
+
+        foreach ($this->payload as $title => $field) {
+            $type = strtolower(gettype($field));
+            if ($type == 'null') {
+                $type = 'string';
+            }
+
+            $content .= ("                            <$title xsi:type=\"xsd:$type\">$field</$title>\n");
+        }
+
+        return $this->wrapper(trim($content));
+    }
+
+    /**
+     * Wrapping the request object as proper xml object stream
+     *
+     * @param $content
+     * @return string
+     *
+     * @throws Exception
+     */
+    private function wrapper($content)
+    {
+        if (empty($this->methodWrapper)) {
+            throw new Exception('Payload method is missing.');
+        }
+
+        return '<?xml version="1.0" encoding="utf-8"?>
+            <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <urn:'.$this->methodWrapper.' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+                        <'.$this->wrapper.' xsi:type="urn:'.$this->wrapper.'">
+                            '.$content.'
+                       </'.$this->wrapper.'>
+                    </urn:'.$this->methodWrapper.'>
+                </soapenv:Body>
+            </soapenv:Envelope>';
     }
 
     /**
@@ -149,104 +205,8 @@ class Request
     }
 
     /**
-     * @param  string  $response
-     *
-     * @throws Exception
-     */
-    private function formatResponse($response = '')
-    {
-        \Log::info("$this->methodWrapper \n ".$response);
-
-        $response = trim(str_replace([
-            '<SOAP-ENV:Body>',
-            '</SOAP-ENV:Body>',
-            'xmlns:ns1="urn:dynamicapi"',
-            'ns1:', ], '', $response));
-
-        try {
-            $response = new SimpleXMLElement($response);
-
-            $response = ($response instanceof SimpleXMLElement)
-                ? json_decode(json_encode($response), true)
-                : '';
-
-            if (isset($response[$this->responseWrapper]['Response'])) {
-                $response = json_decode($response[$this->responseWrapper]['Response'], true);
-
-                if (json_last_error() != JSON_ERROR_NONE) {
-                    throw new JsonException(json_last_error_msg(), json_last_error());
-                }
-            }
-        } catch (Exception $exception) {
-            throw new Exception($exception->getMessage());
-        } finally {
-            $this->cleanup();
-
-            return $response;
-        }
-    }
-
-    /**
-     * Render the payload array to a xml response string
-     *
-     * @return string
-     *
-     * @throws Exception
-     */
-    private function preparePayload()
-    {
-        $content = '';
-
-        if ($this->methodWrapper != Config::AUTHENTICATE) {
-            if (is_null($this->token)) {
-                throw new Exception('Authenticate Token is missing');
-            }
-
-            $this->payload['token'] = $this->token;
-        }
-
-        foreach ($this->payload as $title => $field) {
-            $type = strtolower(gettype($field));
-            if ($type == 'null') {
-                $type = 'string';
-            }
-
-            $content .= ("                            <$title xsi:type=\"xsd:$type\">$field</$title>\n");
-        }
-
-        return $this->wrapper(trim($content));
-    }
-
-    /**
-     * Wrapping the request object as proper xml object stream
-     *
-     * @param $content
-     * @return string
-     *
-     * @throws Exception
-     */
-    private function wrapper($content)
-    {
-        if (empty($this->methodWrapper)) {
-            throw new Exception('Payload method is missing.');
-        }
-
-        return '<?xml version="1.0" encoding="utf-8"?>
-            <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:dynamicapi">
-                <soapenv:Header/>
-                <soapenv:Body>
-                    <urn:'.$this->methodWrapper.' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                        <'.$this->wrapper.' xsi:type="urn:'.$this->wrapper.'">
-                            '.$content.'
-                       </'.$this->wrapper.'>
-                    </urn:'.$this->methodWrapper.'>
-                </soapenv:Body>
-            </soapenv:Envelope>';
-    }
-
-    /**
      * @param $request
-     * @param  null  $exception
+     * @param  Exception|null  $exception
      * @return void
      *
      * @throws Exception
@@ -260,11 +220,48 @@ class Request
         }
     }
 
+    /**
+     * @param  string  $response
+     * @return mixed|string
+     *
+     * @throws Exception
+     */
+    private function formatResponse(string $response = '')
+    {
+        $response = trim(str_replace([
+            '<SOAP-ENV:Body>',
+            '</SOAP-ENV:Body>',
+            'xmlns:ns1="urn:dynamicapi"',
+            'ns1:', ], '', $response));
+
+        try {
+            $response = simplexml_load_string($response);
+
+            $response = ($response instanceof SimpleXMLElement)
+                ? json_decode(json_encode($response), true)
+                : '';
+
+            if (isset($response[$this->responseWrapper]['Response'])) {
+                $response = json_decode($response[$this->responseWrapper]['Response'], true);
+
+                if (json_last_error() != JSON_ERROR_NONE) {
+                    throw new \JsonException(json_last_error_msg(), json_last_error());
+                }
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage());
+        }
+
+        $this->cleanup();
+
+        return $response;
+    }
+
     private function cleanup()
     {
         $this->payload = [];
-        $this->methodWrapper = null;
-        $this->responseWrapper = null;
-        $this->wrapper = null;
+        $this->methodWrapper = '';
+        $this->responseWrapper = '';
+        $this->wrapper = '';
     }
 }

@@ -73,7 +73,7 @@ class Config
      *
      * @param  array  $options
      */
-    public function __construct($options = [])
+    public function __construct(array $options = [])
     {
         foreach ($options as $property => $value) {
             $this->{$property} = $value;
@@ -111,7 +111,6 @@ class Config
     public function __set($key, $value)
     {
         switch ($key) {
-
             case 'base_url':
                 $this->configBaseUrl($value);
                 break;
@@ -133,7 +132,7 @@ class Config
     /**
      * @param  string  $url
      */
-    private function configBaseUrl($url)
+    private function configBaseUrl(string $url)
     {
         $metaData = parse_url($url);
 
@@ -159,7 +158,7 @@ class Config
     /**
      * @param  string  $mode
      */
-    private function configMode($mode)
+    private function configMode(string $mode)
     {
         if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
             $this->values['mode'] = $mode;
@@ -173,7 +172,7 @@ class Config
      * value stored in values array exception
      *
      * @param $key
-     * @return void
+     * @return bool
      *
      * @throws Exception
      */
@@ -182,6 +181,8 @@ class Config
         if (! array_key_exists($key, $this->values)) {
             throw  new Exception("Trying to access an undefined magic property $key");
         }
+
+        return true;
     }
 
     /**
@@ -224,7 +225,7 @@ class Config
      *
      * @param  string  $api_url
      */
-    public function setApiUrl($api_url)
+    public function setApiUrl(string $api_url)
     {
         $this->api_url = $api_url;
     }
