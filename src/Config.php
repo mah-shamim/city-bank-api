@@ -111,7 +111,6 @@ class Config
     public function __set($key, $value)
     {
         switch ($key) {
-
             case 'base_url':
                 $this->configBaseUrl($value);
                 break;
