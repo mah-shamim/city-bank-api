@@ -1,10 +1,30 @@
 <?php
 
-namespace Tests;
+namespace MahShamim\CityBank\Tests;
 
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
-abstract class TestCase extends BaseTestCase
+use MahShamim\CityBank\CityBankServiceProvider;
+
+class TestCase extends \Orchestra\Testbench\TestCase
 {
-    use CreatesApplication;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        // additional setup
+    }
+
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            CityBankServiceProvider::class,
+        ];
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        // perform environment setup
+    }
+
 }

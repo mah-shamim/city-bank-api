@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace MahShamim\CityBank\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
