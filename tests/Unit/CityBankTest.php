@@ -11,6 +11,7 @@ class CityBankTest extends TestCase
      * Test can check authenticate return array
      *
      * @return void
+     *
      * @throws \Exception
      */
     public function testCityBankExecuteAuthenticate()
