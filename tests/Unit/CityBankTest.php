@@ -1,11 +1,9 @@
 <?php
 
-
 namespace MahShamim\CityBank\Tests\Unit;
 
 use MahShamim\CityBank\CityBank;
 use PHPUnit\Framework\TestCase;
-
 
 class CityBankTest extends TestCase
 {
