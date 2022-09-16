@@ -173,7 +173,7 @@ class Request
             $this->handleException($client, $exception);
         }
 
-        logger('API Response'.$response);
+        //logger('API Response'.$response);
 
         curl_close($client);
 
@@ -214,7 +214,7 @@ class Request
     private function handleException($request, $exception)
     {
         if ($this->config->mode == Config::MODE_LIVE) {
-            logger("$this->methodWrapper Request Error : ".curl_error($request));
+            //logger("$this->methodWrapper Request Error : ".curl_error($request));
         } else {
             throw new Exception("$this->methodWrapper Exception : {$exception->getMessage()},  Curl Error: ".curl_error($request), curl_errno($request));
         }

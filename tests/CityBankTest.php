@@ -7,37 +7,42 @@ use PHPUnit\Framework\TestCase;
 
 class CityBankTest extends TestCase
 {
+
     /**
-     * Test can check authenticate return array
-     *
-     * @return void
-     *
+     * @return CityBank
      * @throws \Exception
      */
-    public function CityBankExecuteAuthenticate()
+    private function createInstance()
     {
         $config = [
-            'mode' => 'sandbox',
-            'username' => 'cbl_mycash_online',
-            'password' => 'Myash0nlin3',
-            'company' => 'MyCash Online',
-            'base_url' => 'https://nrbms.thecitybank.com',
-            'api_url' => '/nrb_api_test/dynamicApi.php?wsdl',
+            'mode' => $_ENV['mode'] ?? "sandbox",
+            'username' => $_ENV['username'],
+            'password' => $_ENV['password'],
+            'company' => $_ENV['company'],
+            'base_url' => $_ENV['base_url'] ?? "https://nrbms.thecitybank.com",
+            'api_url' => $_ENV['api_url'] ?? "/nrb_api_test/dynamicApi.php?wsdl",
         ];
 
         $cityBank = new CityBank($config);
 
-        $result = $cityBank->init()->doAuthenticate();
-
-        $this->assertIsArray($result, 'Successful');
+        return $cityBank->init();
     }
 
-    public function test_echo()
+    /**
+     * Test to check if API response a valid auth token
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function test_auth_token()
     {
-        $result = "echo";
+        $instance = $this->createInstance();
 
-        $expected = "echo";
+        $result = $instance->token();;
 
-        $this->assertSame($expected, $result);
+        $this->assertRegExp('/[a-zA-Z0-9]{33}/', $result, "Invalid Authentication Token : {$result}");
     }
+
+
+
 }

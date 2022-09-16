@@ -16,10 +16,19 @@
     failOnRisky="true"
     beStrictAboutOutputDuringTests="true"
     verbose="true"
+    stopOnError="true"
 >
     <testsuites>
         <testsuite name="VendorName Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="mode" value="sandbox"/>
+        <env name="username" value="cbl_mycash_online"/>
+        <env name="password" value="Myash0nlin3"/>
+        <env name="company" value="MyCash Online"/>
+        <env name="base_url" value="https://nrbms.thecitybank.com"/>
+        <env name="api_url" value="/nrb_api_test/dynamicApi.php?wsdl"/>
+    </php>
 </phpunit>
