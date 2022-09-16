@@ -1,6 +1,6 @@
 <?php
 
-namespace MahShamim\CityBank\Tests\Unit;
+namespace MahShamim\CityBank\Tests;
 
 use MahShamim\CityBank\CityBank;
 use PHPUnit\Framework\TestCase;
@@ -14,7 +14,7 @@ class CityBankTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testCityBankExecuteAuthenticate()
+    public function CityBankExecuteAuthenticate()
     {
         $config = [
             'mode' => 'sandbox',
@@ -30,5 +30,14 @@ class CityBankTest extends TestCase
         $result = $cityBank->init()->doAuthenticate();
 
         $this->assertIsArray($result, 'Successful');
+    }
+
+    public function test_echo()
+    {
+        $result = "echo";
+
+        $expected = "echo";
+
+        $this->assertSame($expected, $result);
     }
 }
