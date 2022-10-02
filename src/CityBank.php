@@ -26,13 +26,13 @@ class CityBank
     /**
      * CityBank constructor.
      *
-     * @param array|object $config
+     * @param  array|object  $config
      *
      * @throws Exception
      */
     public function __construct($config = [])
     {
-        $config = is_object($config) ? (array)$config : $config;
+        $config = is_object($config) ? (array) $config : $config;
 
         $this->config = new Config($config);
     }
@@ -124,14 +124,14 @@ class CityBank
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
      * @param $reference
-     * @param array $data
+     * @param  array  $data
      * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function doTransfer($reference, array $data = []):self
+    public function doTransfer($reference, array $data = []): self
     {
         $payload = ['reference_no' => $reference];
 
@@ -161,8 +161,8 @@ class CityBank
         $payload['special_instruction'] = $data['special_instruction'] ?? 'NA';
         $payload['issue_date'] = $data['issue_date'] ?? '';
         for ($i = 1; $i <= 10; $i++) {
-            $payload['custom_field_name_' . $i] = $data['custom_field_name_' . $i] ?? '?';
-            $payload['custom_field_value_' . $i] = $data['custom_field_value_' . $i] ?? '?';
+            $payload['custom_field_name_'.$i] = $data['custom_field_name_'.$i] ?? '?';
+            $payload['custom_field_value_'.$i] = $data['custom_field_value_'.$i] ?? '?';
         }
         $this->request
             ->method(Config::TRANSFER)
@@ -174,14 +174,14 @@ class CityBank
     /**
      * Get transaction status service will help you to get the transaction status
      *
-     * @param mixed $reference
+     * @param  mixed  $reference
      * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function getTnxStatus($reference):self
+    public function getTnxStatus($reference): self
     {
         $payload = ['reference_no' => $reference];
 
@@ -195,15 +195,15 @@ class CityBank
     /**
      * Do amendment or cancel service will help you to send the transaction cancel/amendment request
      *
-     * @param mixed $reference
-     * @param string $details
+     * @param  mixed  $reference
+     * @param  string  $details
      * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function doAmendmentOrCancel($reference, string $details = '?'):self
+    public function doAmendmentOrCancel($reference, string $details = '?'): self
     {
         $payload = ['reference_no' => $reference, 'amend_query' => $details];
 
@@ -223,7 +223,7 @@ class CityBank
      *
      * @since 2.0.0
      */
-    public function getBalance():self
+    public function getBalance(): self
     {
         $payload = [];
 
@@ -237,15 +237,15 @@ class CityBank
     /**
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
-     * @param string $mobileNumber
-     * @param string $fullName
+     * @param  string  $mobileNumber
+     * @param  string  $fullName
      * @return self
      *
      * @throws Exception
      *
      * @since 2.1.0
      */
-    public function doBkashCustomerValidation(string $mobileNumber, string $fullName = '?'):self
+    public function doBkashCustomerValidation(string $mobileNumber, string $fullName = '?'): self
     {
         $payload = ['mobileNumber' => $mobileNumber];
 
@@ -263,15 +263,15 @@ class CityBank
     /**
      * Do Bkash transfer service will help you to send a bkash transaction
      *
-     * @param mixed $reference
-     * @param array $data
+     * @param  mixed  $reference
+     * @param  array  $data
      * @return self
      *
      * @throws Exception
      *
      * @since 2.1.0
      */
-    public function doBkashTransfer($reference, array $data = []):self
+    public function doBkashTransfer($reference, array $data = []): self
     {
         $payload = ['reference_no' => $reference];
 
@@ -323,14 +323,14 @@ class CityBank
     /**
      * This service call will provide you the bkash transaction status.
      *
-     * @param mixed $reference
+     * @param  mixed  $reference
      * @return self
      *
      * @throws Exception
      *
      * @since 2.1.0
      */
-    public function getBkashTnxStatus($reference):self
+    public function getBkashTnxStatus($reference): self
     {
         $payload = ['reference_no' => $reference];
 
