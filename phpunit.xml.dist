@@ -30,5 +30,6 @@
         <env name="company" value="MyCash Online"/>
         <env name="base_url" value="https://nrbms.thecitybank.com"/>
         <env name="api_url" value="/nrb_api_test/dynamicApi.php?wsdl"/>
+        <env name="reference_no" value="MCM8983263270722"/>
     </php>
 </phpunit>

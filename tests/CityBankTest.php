@@ -38,11 +38,34 @@ class CityBankTest extends TestCase
     {
         $instance = $this->createInstance();
 
-        $result = $instance->token();;
+        $response = $instance->token();;
 
-        $this->assertRegExp('/[a-zA-Z0-9]{33}/', $result, "Invalid Authentication Token : {$result}");
+        $this->assertRegExp('/[a-zA-Z0-9]{33}/', $response, "Invalid Authentication Token : {$response}");
     }
 
+    /**
+     * Test to check if API response a valid
+     * data for transaction status detail
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function test_bank_transaction_status()
+    {
+
+        $reference_no = $_ENV['reference_no'];
+
+        $instance = $this->createInstance();
+
+        $response = $instance
+            ->getTnxStatus($reference_no)
+            ->execute();
+
+        $this->assertIsArray($response);
+        $this->assertArrayHasKey('message', $response, "Message field missing. " . json_encode($response));
+        $this->assertArrayHasKey('status', $response, "Status field missing. " . json_encode($response));
+        $this->assertArrayHasKey('datainfo', $response, "DataInfo field missing. " . json_encode($response));
+    }
 
 
 }
