@@ -26,7 +26,7 @@ class InstallCommand extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         if ($this->confirm('Publish Configuration File?')) {
             $this->saveConfiguration();
@@ -92,14 +92,14 @@ class InstallCommand extends Command
      * @param  bool  $overwrite
      * @return string
      */
-    protected function envVariables(bool $overwrite = false)
+    protected function envVariables(bool $overwrite = false): string
     {
         $currentConfig = config('city-bank.sandbox');
 
-        $mode = (isset($currentConfig['mode']) ? $currentConfig['mode'] : Config::MODE_SANDBOX);
-        $username = (isset($currentConfig['username']) ? $currentConfig['username'] : '');
-        $password = (isset($currentConfig['password']) ? $currentConfig['password'] : '');
-        $company = (isset($currentConfig['company']) ? $currentConfig['company'] : '');
+        $mode = ($currentConfig['mode'] ?? Config::MODE_SANDBOX);
+        $username = ($currentConfig['username'] ?? '');
+        $password = ($currentConfig['password'] ?? '');
+        $company = ($currentConfig['company'] ?? '');
 
         return implode("\n", [
             "\n",
