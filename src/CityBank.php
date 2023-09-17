@@ -425,4 +425,25 @@ class CityBank
         return $this;
     }
 
+    /**
+     * Calling getNagadTransferStatusAPI with following parameters’ values with obtained secure token,
+     * Partner can check nagad transaction status by providing transaction unique reference number.
+     *
+     * @param  mixed  $reference //reference_no/transaction_no  Transaction Reference Number is mandatory
+     * @return self
+     *
+     * @throws Exception
+     *
+     * @since 2.5.0
+     */
+    public function getNagadTnxStatus($reference): CityBank
+    {
+        $payload = ['reference_no' => $reference];
+
+        $this->request
+            ->method(Config::NAGAD_TRANSFER_STATUS)
+            ->payload('nagad_remit_transfer_status', $payload);
+
+        return $this;
+    }
 }
