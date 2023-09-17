@@ -340,4 +340,25 @@ class CityBank
 
         return $this;
     }
+
+    /**
+     * Calling nagadCustomerValidation API with following parameters’ values with obtained secure token,
+     * Partner can send customer validation request in NRB system.
+     *
+     * @param string $mobileNumber
+     * @param float $amount
+     * @return self
+     *
+     * @since 2.5.0
+     */
+    public function doNagadCustomerValidation(string $mobileNumber, float $amount = 50): CityBank
+    {
+        $payload = ['beneficiaryMobileNumber' => $mobileNumber, 'amount' => $amount, 'payMode' => 'N'];
+
+        $this->request
+            ->method(Config::NAGAD_CUSTOMER_VALIDATION)
+            ->payload('nagad_remitter_validation', $payload);
+
+        return $this;
+    }
 }
