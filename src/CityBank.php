@@ -345,8 +345,8 @@ class CityBank
      * Calling nagadCustomerValidation API with following parameters’ values with obtained secure token,
      * Partner can send customer validation request in NRB system.
      *
-     * @param string $mobileNumber
-     * @param float $amount
+     * @param string $mobileNumber // beneficiaryMobileNumber   Beneficiary Mobile Number is mandatory
+     * @param float $amount // amount   Transaction Amount is mandatory
      * @return self
      *
      * @since 2.5.0
