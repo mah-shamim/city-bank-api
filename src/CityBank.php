@@ -336,7 +336,7 @@ class CityBank
 
         $this->request
             ->method(Config::BKASH_TRANSFER_STATUS)
-            ->payload('transaction_status', $payload);
+            ->payload('bkash_transfer_status', $payload);
 
         return $this;
     }
