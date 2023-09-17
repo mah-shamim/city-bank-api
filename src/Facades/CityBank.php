@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Facade;
  */
 class CityBank extends Facade
 {
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return 'city-bank';
     }
