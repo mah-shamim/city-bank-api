@@ -8,7 +8,7 @@ use Exception;
  * Class CityBank
  *
  * This class provides the details related to Remittance API.
- * This APIs is used to initiate payment request from
+ * These APIs are used to initiate payment request from
  * Mobile client/others exchange house.
  */
 class CityBank
@@ -44,7 +44,7 @@ class CityBank
      *
      * @throws Exception
      */
-    public function init()
+    public function init(): CityBank
     {
         $this->request = new Request($this->config);
 
@@ -62,7 +62,7 @@ class CityBank
      *
      * @since 2.0.0
      */
-    public function doAuthenticate()
+    public function doAuthenticate(): CityBank
     {
         $payload = [
             'username' => $this->config->username,
@@ -87,7 +87,7 @@ class CityBank
      *
      * @throws Exception
      */
-    public function token()
+    public function token(): string
     {
         if (strlen($this->request->token) == 0) {
             $this->doAuthenticate();
@@ -103,7 +103,7 @@ class CityBank
      *
      * @throws Exception
      */
-    public function xml()
+    public function xml(): string
     {
         return $this->request->getXml();
     }
@@ -115,7 +115,7 @@ class CityBank
      *
      * @throws Exception
      */
-    public function execute()
+    public function execute(): array
     {
         return $this->request->connect();
     }
@@ -131,7 +131,7 @@ class CityBank
      *
      * @since 2.0.0
      */
-    public function doTransfer($reference, array $data = [])
+    public function doTransfer($reference, array $data = []): CityBank
     {
         $payload = ['reference_no' => $reference];
 
@@ -181,7 +181,7 @@ class CityBank
      *
      * @since 2.0.0
      */
-    public function getTnxStatus($reference)
+    public function getTnxStatus($reference): CityBank
     {
         $payload = ['reference_no' => $reference];
 
@@ -203,7 +203,7 @@ class CityBank
      *
      * @since 2.0.0
      */
-    public function doAmendmentOrCancel($reference, string $details = '?')
+    public function doAmendmentOrCancel($reference, string $details = '?'): CityBank
     {
         $payload = ['reference_no' => $reference, 'amend_query' => $details];
 
@@ -223,7 +223,7 @@ class CityBank
      *
      * @since 2.0.0
      */
-    public function getBalance()
+    public function getBalance(): CityBank
     {
         $payload = [];
 
@@ -245,7 +245,7 @@ class CityBank
      *
      * @since 2.1.0
      */
-    public function doBkashCustomerValidation(string $mobileNumber, string $fullName = '?')
+    public function doBkashCustomerValidation(string $mobileNumber, string $fullName = '?'): CityBank
     {
         $payload = ['mobileNumber' => $mobileNumber];
 
@@ -271,7 +271,7 @@ class CityBank
      *
      * @since 2.1.0
      */
-    public function doBkashTransfer($reference, array $data = [])
+    public function doBkashTransfer($reference, array $data = []): CityBank
     {
         $payload = ['reference_no' => $reference];
 
@@ -330,7 +330,7 @@ class CityBank
      *
      * @since 2.1.0
      */
-    public function getBkashTnxStatus($reference)
+    public function getBkashTnxStatus($reference): CityBank
     {
         $payload = ['reference_no' => $reference];
 
