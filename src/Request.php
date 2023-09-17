@@ -40,7 +40,6 @@ class Request
     /**
      * Request constructor.
      *
-     * @param  Config  $config
      *
      * @throws Exception
      */
@@ -50,10 +49,9 @@ class Request
     }
 
     /**
-     * @param  string  $method
      * @return $this
      */
-    public function method(string $method)
+    public function method(string $method): Request
     {
         $this->methodWrapper = $method;
 
@@ -63,11 +61,9 @@ class Request
     }
 
     /**
-     * @param  string  $wrapper
-     * @param  array  $data
      * @return $this
      */
-    public function payload(string $wrapper, array $data = [])
+    public function payload(string $wrapper, array $data = []): Request
     {
         $this->payload = $data;
 
@@ -77,11 +73,9 @@ class Request
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
-    public function getXml()
+    public function getXml(): string
     {
         return $this->preparePayload();
     }
@@ -89,11 +83,10 @@ class Request
     /**
      * Render the payload array to a xml response string
      *
-     * @return string
      *
      * @throws Exception
      */
-    private function preparePayload()
+    private function preparePayload(): string
     {
         $content = '';
 
@@ -120,12 +113,10 @@ class Request
     /**
      * Wrapping the request object as proper xml object stream
      *
-     * @param $content
-     * @return string
      *
      * @throws Exception
      */
-    private function wrapper($content)
+    private function wrapper($content): string
     {
         if (empty($this->methodWrapper)) {
             throw new Exception('Payload method is missing.');
@@ -166,7 +157,7 @@ class Request
 
             $response = curl_exec($client);
 
-            if (strlen($response) == 0 && $response == false) {
+            if (strlen($response) == 0 && ! $response) {
                 throw new Exception('Curl response is empty');
             }
         } catch (Exception $exception) {
@@ -181,11 +172,9 @@ class Request
     }
 
     /**
-     * @return array
-     *
      * @throws Exception
      */
-    private function curlOptions()
+    private function curlOptions(): array
     {
         $xmlString = $this->preparePayload();
 
@@ -205,13 +194,11 @@ class Request
     }
 
     /**
-     * @param $request
-     * @param  Exception|null  $exception
      * @return void
      *
      * @throws Exception
      */
-    private function handleException($request, $exception)
+    private function handleException($request, ?Exception $exception)
     {
         if ($this->config->mode == Config::MODE_LIVE) {
             logger("$this->methodWrapper Request Error : ".curl_error($request));
@@ -221,7 +208,6 @@ class Request
     }
 
     /**
-     * @param  string  $response
      * @return mixed|string
      *
      * @throws Exception

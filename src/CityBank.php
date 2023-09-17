@@ -8,7 +8,7 @@ use Exception;
  * Class CityBank
  *
  * This class provides the details related to Remittance API.
- * This APIs is used to initiate payment request from
+ * These APIs are used to initiate payment request from
  * Mobile client/others exchange house.
  */
 class CityBank
@@ -40,11 +40,10 @@ class CityBank
     /**
      * Initialize the API client class
      *
-     * @return self
      *
      * @throws Exception
      */
-    public function init()
+    public function init(): CityBank
     {
         $this->request = new Request($this->config);
 
@@ -56,13 +55,12 @@ class CityBank
     /**
      * Do authenticate service will provide you the access token
      *
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function doAuthenticate()
+    public function doAuthenticate(): CityBank
     {
         $payload = [
             'username' => $this->config->username,
@@ -83,11 +81,9 @@ class CityBank
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
-    public function token()
+    public function token(): string
     {
         if (strlen($this->request->token) == 0) {
             $this->doAuthenticate();
@@ -99,11 +95,10 @@ class CityBank
     /**
      * Render the api payload as xml string
      *
-     * @return string
      *
      * @throws Exception
      */
-    public function xml()
+    public function xml(): string
     {
         return $this->request->getXml();
     }
@@ -111,11 +106,10 @@ class CityBank
     /**
      * Execute the Request api
      *
-     * @return array
      *
      * @throws Exception
      */
-    public function execute()
+    public function execute(): array
     {
         return $this->request->connect();
     }
@@ -123,15 +117,12 @@ class CityBank
     /**
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
-     * @param $reference
-     * @param  array  $data
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function doTransfer($reference, array $data = [])
+    public function doTransfer($reference, array $data = []): CityBank
     {
         $payload = ['reference_no' => $reference];
 
@@ -175,13 +166,12 @@ class CityBank
      * Get transaction status service will help you to get the transaction status
      *
      * @param  mixed  $reference
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function getTnxStatus($reference)
+    public function getTnxStatus($reference): CityBank
     {
         $payload = ['reference_no' => $reference];
 
@@ -196,14 +186,12 @@ class CityBank
      * Do amendment or cancel service will help you to send the transaction cancel/amendment request
      *
      * @param  mixed  $reference
-     * @param  string  $details
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function doAmendmentOrCancel($reference, string $details = '?')
+    public function doAmendmentOrCancel($reference, string $details = '?'): CityBank
     {
         $payload = ['reference_no' => $reference, 'amend_query' => $details];
 
@@ -217,13 +205,12 @@ class CityBank
     /**
      * Get balance service will help to know the available balance
      *
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.0.0
      */
-    public function getBalance()
+    public function getBalance(): CityBank
     {
         $payload = [];
 
@@ -237,15 +224,12 @@ class CityBank
     /**
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
-     * @param  string  $mobileNumber
-     * @param  string  $fullName
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.1.0
      */
-    public function doBkashCustomerValidation(string $mobileNumber, string $fullName = '?')
+    public function doBkashCustomerValidation(string $mobileNumber, string $fullName = '?'): CityBank
     {
         $payload = ['mobileNumber' => $mobileNumber];
 
@@ -264,14 +248,12 @@ class CityBank
      * Do Bkash transfer service will help you to send a bkash transaction
      *
      * @param  mixed  $reference
-     * @param  array  $data
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.1.0
      */
-    public function doBkashTransfer($reference, array $data = [])
+    public function doBkashTransfer($reference, array $data = []): CityBank
     {
         $payload = ['reference_no' => $reference];
 
@@ -324,19 +306,120 @@ class CityBank
      * This service call will provide you the bkash transaction status.
      *
      * @param  mixed  $reference
-     * @return self
      *
      * @throws Exception
      *
      * @since 2.1.0
      */
-    public function getBkashTnxStatus($reference)
+    public function getBkashTnxStatus($reference): CityBank
     {
         $payload = ['reference_no' => $reference];
 
         $this->request
             ->method(Config::BKASH_TRANSFER_STATUS)
-            ->payload('transaction_status', $payload);
+            ->payload('bkash_transfer_status', $payload);
+
+        return $this;
+    }
+
+    /**
+     * Calling nagadCustomerValidation API with following parameters’ values with obtained secure token,
+     * Partner can send customer validation request in NRB system.
+     *
+     * @param  string  $mobileNumber // beneficiaryMobileNumber   Beneficiary Mobile Number is mandatory
+     * @param  float  $amount // amount   Transaction Amount is mandatory
+     *
+     * @since 2.5.0
+     */
+    public function doNagadCustomerValidation(string $mobileNumber, float $amount = 50): CityBank
+    {
+        $payload = ['beneficiaryMobileNumber' => $mobileNumber, 'amount' => $amount, 'payMode' => 'N'];
+
+        $this->request
+            ->method(Config::NAGAD_CUSTOMER_VALIDATION)
+            ->payload('nagad_remitter_validation', $payload);
+
+        return $this;
+    }
+
+    /**
+     * Calling doNagadTransfer API with following parameters’ values with obtained secure token,
+     * Partner can send bKash payment request in NRB system
+     *
+     * @param  mixed  $reference // reference_no    Transaction Reference no is Mandatory
+     *
+     * @throws Exception
+     *
+     * @since 2.5.0
+     */
+    public function doNagadTransfer($reference, array $data = []): CityBank
+    {
+        $payload = ['reference_no' => $reference];
+
+        try {
+            $payload['amount_in_bdt'] = $data['amount_in_bdt'] ?? 0;
+            $payload['remitter_name'] = $data['remitter_name'] ?? '?';
+            $payload['remitter_dob'] = $data['remitter_dob'] ?? '?';
+
+            if (isset($data['remitter_iqama_no'])) {
+                $payload['remitter_iqama_no'] = $data['remitter_iqama_no'];
+            }
+
+            $payload['remitter_id_passport_no'] = $data['remitter_id_passport_no'] ?? '2';
+
+            if (isset($data['remitter_address'])) {
+                $payload['remitter_address'] = $data['remitter_address'];
+            }
+
+            $payload['remitter_mobile_no'] = $data['remitter_mobile_no'] ?? '?';
+            $payload['issuing_country'] = $data['issuing_country'] ?? '?';
+            $payload['beneficiary_name'] = $data['beneficiary_name'] ?? '?';
+            $payload['beneficiary_city'] = $data['beneficiary_city'] ?? '?';
+
+            if (isset($data['beneficiary_id_no'])) {
+                $payload['beneficiary_id_no'] = $data['beneficiary_id_no'];
+                $payload['beneficiary_id_type'] = $data['beneficiary_id_type'] ?? '';
+            } else {
+                $payload['beneficiary_id_no'] = '?';
+            }
+
+            $payload['purpose_of_payment'] = $data['purpose_of_payment'] ?? '?';
+            $payload['beneficiary_mobile_phone_no'] = $data['beneficiary_mobile_phone_no'] ?? '?';
+
+            if (isset($data['beneficiary_address'])) {
+                $payload['beneficiary_address'] = $data['beneficiary_address'];
+            }
+
+            $payload['issue_date'] = $data['issue_date'] ?? date('Y-m-d');
+            $payload['transaction_type'] = $data['transaction_type'] ?? '';
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage());
+        }
+
+        $this->request
+            ->method(Config::NAGAD_TRANSFER)
+            ->payload('nagad_remit_transfer', $payload);
+
+        return $this;
+    }
+
+    /**
+     * Calling getNagadTransferStatusAPI with following parameters’ values with obtained secure token,
+     * Partner can check nagad transaction status by providing transaction unique reference number.
+     *
+     * @param  mixed  $reference //reference_no/transaction_no  Transaction Reference Number is mandatory
+     *
+     * @throws Exception
+     *
+     * @since 2.5.0
+     */
+    public function getNagadTnxStatus($reference): CityBank
+    {
+        $payload = ['reference_no' => $reference];
+
+        $this->request
+            ->method(Config::NAGAD_TRANSFER_STATUS)
+            ->payload('nagad_remit_transfer_status', $payload);
 
         return $this;
     }
