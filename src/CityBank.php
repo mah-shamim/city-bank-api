@@ -366,7 +366,7 @@ class CityBank
      * Calling doNagadTransfer API with following parameters’ values with obtained secure token,
      * Partner can send bKash payment request in NRB system
      *
-     * @param  mixed  $reference
+     * @param  mixed  $reference // reference_no    Transaction Reference no is Mandatory
      * @param  array  $data
      * @return self
      *
