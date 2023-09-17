@@ -43,6 +43,12 @@ class Config
 
     const BKASH_TRANSFER_STATUS = 'getBkashTransferStatus';
 
+    const NAGAD_CUSTOMER_VALIDATION = 'nagadCustomerValidation';
+
+    const NAGAD_TRANSFER = 'doNagadTransfer';
+
+    const NAGAD_TRANSFER_STATUS = 'getNagadTransferStatus';
+
     /**
      * Index array list of headers
      *
