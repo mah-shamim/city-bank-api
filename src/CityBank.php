@@ -361,4 +361,68 @@ class CityBank
 
         return $this;
     }
+
+    /**
+     * Calling doNagadTransfer API with following parameters’ values with obtained secure token,
+     * Partner can send bKash payment request in NRB system
+     *
+     * @param  mixed  $reference
+     * @param  array  $data
+     * @return self
+     *
+     * @throws Exception
+     *
+     * @since 2.5.0
+     */
+    public function doNagadTransfer($reference, array $data = []): CityBank
+    {
+        $payload = ['reference_no' => $reference];
+
+        try {
+            $payload['amount_in_bdt'] = $data['amount_in_bdt'] ?? 0;
+            $payload['remitter_name'] = $data['remitter_name'] ?? '?';
+            $payload['remitter_dob'] = $data['remitter_dob'] ?? '?';
+
+            if (isset($data['remitter_iqama_no'])) {
+                $payload['remitter_iqama_no'] = $data['remitter_iqama_no'];
+            }
+
+            $payload['remitter_id_passport_no'] = $data['remitter_id_passport_no'] ?? '2';
+
+            if (isset($data['remitter_address'])) {
+                $payload['remitter_address'] = $data['remitter_address'];
+            }
+
+            $payload['remitter_mobile_no'] = $data['remitter_mobile_no'] ?? '?';
+            $payload['issuing_country'] = $data['issuing_country'] ?? '?';
+            $payload['beneficiary_name'] = $data['beneficiary_name'] ?? '?';
+            $payload['beneficiary_city'] = $data['beneficiary_city'] ?? '?';
+
+            if (isset($data['beneficiary_id_no'])) {
+                $payload['beneficiary_id_no'] = $data['beneficiary_id_no'];
+                $payload['beneficiary_id_type'] = $data['beneficiary_id_type'] ?? '';
+            }else{
+                $payload['beneficiary_id_no'] = '?';
+            }
+
+            $payload['purpose_of_payment'] = $data['purpose_of_payment'] ?? '?';
+            $payload['beneficiary_mobile_phone_no'] = $data['beneficiary_mobile_phone_no'] ?? '?';
+
+            if (isset($data['beneficiary_address'])) {
+                $payload['beneficiary_address'] = $data['beneficiary_address'];
+            }
+
+            $payload['issue_date'] = $data['issue_date'] ?? date('Y-m-d');
+            $payload['transaction_type'] = $data['transaction_type'] ?? '';
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage());
+        }
+
+        $this->request
+            ->method(Config::NAGAD_TRANSFER)
+            ->payload('nagad_remit_transfer', $payload);
+
+        return $this;
+    }
+
 }
