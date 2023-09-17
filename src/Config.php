@@ -76,8 +76,6 @@ class Config
 
     /**
      * Config constructor.
-     *
-     * @param  array  $options
      */
     public function __construct(array $options = [])
     {
@@ -98,7 +96,6 @@ class Config
      * Magic getter function for dynamic
      * value stored in values array
      *
-     * @param $key
      * @return mixed
      */
     public function __get($key)
@@ -110,8 +107,6 @@ class Config
      * Magic setter function for dynamic
      * value stored in values array
      *
-     * @param $key
-     * @param $value
      * @return void
      */
     public function __set($key, $value)
@@ -135,9 +130,6 @@ class Config
         }
     }
 
-    /**
-     * @param  string  $url
-     */
     private function configBaseUrl(string $url)
     {
         $metaData = parse_url($url);
@@ -153,17 +145,11 @@ class Config
         }
     }
 
-    /**
-     * @param $url
-     */
     private function configApiUrl($url)
     {
         $this->values['api_url'] = ($this->base_url.$url);
     }
 
-    /**
-     * @param  string  $mode
-     */
     private function configMode(string $mode)
     {
         if (in_array($mode, [self::MODE_LIVE, self::MODE_SANDBOX])) {
@@ -177,7 +163,6 @@ class Config
      * Magic isset function for handle unassigned
      * value stored in values array exception
      *
-     * @param $key
      * @return bool
      *
      * @throws Exception
@@ -185,7 +170,7 @@ class Config
     public function __isset($key)
     {
         if (! array_key_exists($key, $this->values)) {
-            throw  new Exception("Trying to access an undefined magic property $key");
+            throw new Exception("Trying to access an undefined magic property $key");
         }
 
         return true;
@@ -193,8 +178,6 @@ class Config
 
     /**
      * Removed magic property from value array
-     *
-     * @param $key
      */
     public function __unset($key)
     {
@@ -203,9 +186,6 @@ class Config
         }
     }
 
-    /**
-     * @return array
-     */
     public function getHeaders(): array
     {
         $headers = [];
@@ -217,10 +197,6 @@ class Config
         return $headers;
     }
 
-    /**
-     * @param $header
-     * @param $value
-     */
     public function setHeaders($header, $value)
     {
         $this->headers[$header] = $value;
@@ -228,8 +204,6 @@ class Config
 
     /**
      * Force overwrite  the api url
-     *
-     * @param  string  $api_url
      */
     public function setApiUrl(string $api_url)
     {

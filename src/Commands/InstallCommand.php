@@ -23,8 +23,6 @@ class InstallCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
@@ -88,9 +86,6 @@ class InstallCommand extends Command
 
     /**
      * Return the env values
-     *
-     * @param  bool  $overwrite
-     * @return string
      */
     protected function envVariables(bool $overwrite = false): string
     {

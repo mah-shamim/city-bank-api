@@ -40,7 +40,6 @@ class Request
     /**
      * Request constructor.
      *
-     * @param  Config  $config
      *
      * @throws Exception
      */
@@ -50,7 +49,6 @@ class Request
     }
 
     /**
-     * @param  string  $method
      * @return $this
      */
     public function method(string $method): Request
@@ -63,8 +61,6 @@ class Request
     }
 
     /**
-     * @param  string  $wrapper
-     * @param  array  $data
      * @return $this
      */
     public function payload(string $wrapper, array $data = []): Request
@@ -77,8 +73,6 @@ class Request
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
     public function getXml(): string
@@ -89,7 +83,6 @@ class Request
     /**
      * Render the payload array to a xml response string
      *
-     * @return string
      *
      * @throws Exception
      */
@@ -120,8 +113,6 @@ class Request
     /**
      * Wrapping the request object as proper xml object stream
      *
-     * @param $content
-     * @return string
      *
      * @throws Exception
      */
@@ -166,7 +157,7 @@ class Request
 
             $response = curl_exec($client);
 
-            if (strlen($response) == 0 && !$response) {
+            if (strlen($response) == 0 && ! $response) {
                 throw new Exception('Curl response is empty');
             }
         } catch (Exception $exception) {
@@ -181,8 +172,6 @@ class Request
     }
 
     /**
-     * @return array
-     *
      * @throws Exception
      */
     private function curlOptions(): array
@@ -205,8 +194,6 @@ class Request
     }
 
     /**
-     * @param $request
-     * @param Exception|null $exception
      * @return void
      *
      * @throws Exception
@@ -221,7 +208,6 @@ class Request
     }
 
     /**
-     * @param  string  $response
      * @return mixed|string
      *
      * @throws Exception

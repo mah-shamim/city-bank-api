@@ -40,7 +40,6 @@ class CityBank
     /**
      * Initialize the API client class
      *
-     * @return self
      *
      * @throws Exception
      */
@@ -56,7 +55,6 @@ class CityBank
     /**
      * Do authenticate service will provide you the access token
      *
-     * @return self
      *
      * @throws Exception
      *
@@ -83,8 +81,6 @@ class CityBank
     }
 
     /**
-     * @return string
-     *
      * @throws Exception
      */
     public function token(): string
@@ -99,7 +95,6 @@ class CityBank
     /**
      * Render the api payload as xml string
      *
-     * @return string
      *
      * @throws Exception
      */
@@ -111,7 +106,6 @@ class CityBank
     /**
      * Execute the Request api
      *
-     * @return array
      *
      * @throws Exception
      */
@@ -123,9 +117,6 @@ class CityBank
     /**
      * Do transfer service will help you to send a new transaction by providing following parameter value
      *
-     * @param $reference
-     * @param  array  $data
-     * @return self
      *
      * @throws Exception
      *
@@ -175,7 +166,6 @@ class CityBank
      * Get transaction status service will help you to get the transaction status
      *
      * @param  mixed  $reference
-     * @return self
      *
      * @throws Exception
      *
@@ -196,8 +186,6 @@ class CityBank
      * Do amendment or cancel service will help you to send the transaction cancel/amendment request
      *
      * @param  mixed  $reference
-     * @param  string  $details
-     * @return self
      *
      * @throws Exception
      *
@@ -217,7 +205,6 @@ class CityBank
     /**
      * Get balance service will help to know the available balance
      *
-     * @return self
      *
      * @throws Exception
      *
@@ -237,9 +224,6 @@ class CityBank
     /**
      * bKash customer validation service will help you to validate the beneficiary bkash number before send the transaction
      *
-     * @param  string  $mobileNumber
-     * @param  string  $fullName
-     * @return self
      *
      * @throws Exception
      *
@@ -264,8 +248,6 @@ class CityBank
      * Do Bkash transfer service will help you to send a bkash transaction
      *
      * @param  mixed  $reference
-     * @param  array  $data
-     * @return self
      *
      * @throws Exception
      *
@@ -324,7 +306,6 @@ class CityBank
      * This service call will provide you the bkash transaction status.
      *
      * @param  mixed  $reference
-     * @return self
      *
      * @throws Exception
      *
@@ -345,9 +326,8 @@ class CityBank
      * Calling nagadCustomerValidation API with following parameters’ values with obtained secure token,
      * Partner can send customer validation request in NRB system.
      *
-     * @param string $mobileNumber // beneficiaryMobileNumber   Beneficiary Mobile Number is mandatory
-     * @param float $amount // amount   Transaction Amount is mandatory
-     * @return self
+     * @param  string  $mobileNumber // beneficiaryMobileNumber   Beneficiary Mobile Number is mandatory
+     * @param  float  $amount // amount   Transaction Amount is mandatory
      *
      * @since 2.5.0
      */
@@ -367,8 +347,6 @@ class CityBank
      * Partner can send bKash payment request in NRB system
      *
      * @param  mixed  $reference // reference_no    Transaction Reference no is Mandatory
-     * @param  array  $data
-     * @return self
      *
      * @throws Exception
      *
@@ -401,7 +379,7 @@ class CityBank
             if (isset($data['beneficiary_id_no'])) {
                 $payload['beneficiary_id_no'] = $data['beneficiary_id_no'];
                 $payload['beneficiary_id_type'] = $data['beneficiary_id_type'] ?? '';
-            }else{
+            } else {
                 $payload['beneficiary_id_no'] = '?';
             }
 
@@ -430,7 +408,6 @@ class CityBank
      * Partner can check nagad transaction status by providing transaction unique reference number.
      *
      * @param  mixed  $reference //reference_no/transaction_no  Transaction Reference Number is mandatory
-     * @return self
      *
      * @throws Exception
      *
